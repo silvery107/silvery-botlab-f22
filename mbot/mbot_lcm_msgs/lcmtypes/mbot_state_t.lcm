@@ -1,0 +1,33 @@
+package mbot_lcm_msgs;
+
+struct mbot_state_t
+{
+    int64_t utime;
+
+    float x;
+    float y;
+    float theta;
+
+    // raw sensor inputs
+    float tb_angles[3]; // DMP filtered angles, tb_angles[3] is heading
+    float accel[3]; // units of m/s^2
+    float gyro[3];  // units of degrees/s
+    float mag[3];   // units of uT
+    float temp;     // units of degrees Celsius
+    float last_yaw;
+    
+    int32_t     left_encoder_delta;      // left encoder counts since last reading
+    int32_t     right_encoder_delta;     // right encoder counts since last reading
+
+    int64_t left_encoder_total;  //total encoder ticks since running
+    int64_t right_encoder_total;
+    
+    float fwd_velocity;
+    float turn_velocity;
+    float left_velocity;
+    float right_velocity;
+
+    //outputs
+    float   left_cmd;  //left wheel command [-1..1]
+    float   right_cmd; //right wheel command [-1..1]
+}

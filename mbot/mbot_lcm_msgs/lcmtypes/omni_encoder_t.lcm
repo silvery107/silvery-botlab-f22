@@ -1,0 +1,15 @@
+package mbot_lcm_msgs;
+
+struct omni_encoder_t
+{
+    int64_t utime;
+
+    int64_t aticks;
+    int64_t bticks;
+    int64_t cticks;
+
+    int64_t a_delta;
+    int64_t b_delta;
+    int64_t c_delta;
+
+}

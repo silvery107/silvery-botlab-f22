@@ -1,0 +1,13 @@
+package mbot_lcm_msgs;
+
+struct mbot_encoder_t
+{
+    int64_t utime;
+
+    int64_t leftticks;
+    int64_t rightticks;
+
+    int16_t left_delta;
+    int16_t right_delta;
+
+}
