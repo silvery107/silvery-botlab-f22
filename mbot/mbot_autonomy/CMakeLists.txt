@@ -28,6 +28,18 @@ target_include_directories(motion_controller PRIVATE
   include
 )
 
+# DRIVE SQUARE
+add_executable(drive_square src/mbot/drive_square.cpp)
+
+target_link_libraries(drive_square
+  common_utils
+  lcm
+  mbot_lcm_msgs-cpp
+)
+target_include_directories(drive_square PRIVATE
+  include
+)
+
 # SLAM
 add_executable(slam src/slam/slam_main.cpp
   src/slam/action_model.cpp

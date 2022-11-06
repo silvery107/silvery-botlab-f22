@@ -77,7 +77,7 @@ public:
 
     virtual bool target_reached(const mbot_lcm_msgs::pose_xyt_t& pose, const mbot_lcm_msgs::pose_xyt_t& target, bool is_end_pose)  override
     {
-        return ((fabs(pose.x - target.x) < 0.02) && (fabs(pose.y - target.y)  < 0.02));
+        return ((fabs(pose.x - target.x) < 0.01) && (fabs(pose.y - target.y)  < 0.01));
     }
 };
 
@@ -130,7 +130,7 @@ public:
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
         // Handle the case when the target is on the same x,y but on a different theta
-        return (fabs(angle_diff(pose.theta, target_heading)) < 0.05);
+        return (fabs(angle_diff(pose.theta, target_heading)) < 0.01);
     }
     bool target_reached_final_turn(const mbot_lcm_msgs::pose_xyt_t& pose, const mbot_lcm_msgs::pose_xyt_t& target)
     {
@@ -138,7 +138,7 @@ public:
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
         // Handle the case when the target is on the same x,y but on a different theta
-        return (fabs(angle_diff(target.theta, pose.theta)) < 0.05);
+        return (fabs(angle_diff(target.theta, pose.theta)) < 0.01);
     }
 };
 
@@ -416,8 +416,9 @@ int main(int argc, char** argv)
             mbot_lcm_msgs::mbot_motor_command_t cmd = controller.updateCommand();
             // Limit command values
             // Fwd vel
-            if (cmd.trans_v > 0.3) cmd.trans_v = 0.3;
-            else if (cmd.trans_v < -0.3) cmd.trans_v = -0.3;
+            float max_trans_vel = 0.3;
+            if (cmd.trans_v > max_trans_vel) cmd.trans_v = max_trans_vel;
+            else if (cmd.trans_v < -max_trans_vel) cmd.trans_v = -max_trans_vel;
 
             // Angular vel
             float max_ang_vel = M_PI * 2.0 / 3.0;
