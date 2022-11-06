@@ -11,7 +11,7 @@ lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
 # path = np.array(
 #     [[0, 0, 0], [1, 0, np.pi / 2], [1, 1, np.pi], [0, 1, -np.pi / 2], [0, 0, 0]]
 # )
-path = np.array([[0, 0, 0], [0, 0, 0]])
+path = np.array([[0, 0, 0], [1, 0, 0]])
 
 # path = np.flip(path, 0)
 path_cmd = robot_path_t()
