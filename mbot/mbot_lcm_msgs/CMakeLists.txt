@@ -43,6 +43,7 @@ lcm_wrap_types(
   lcmtypes/wifi_data_t.lcm
   lcmtypes/mbot_system_reset_t.lcm
   lcmtypes/planner_request_t.lcm
+  lcmtypes/pid_values_t.lcm
 )
 
 lcm_add_library(mbot_lcm_msgs C ${c_sources} ${c_headers})

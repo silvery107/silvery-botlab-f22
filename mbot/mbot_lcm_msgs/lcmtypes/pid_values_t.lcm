@@ -1,0 +1,29 @@
+package mbot_lcm_msgs;
+
+struct pid_values_t
+{
+    float motor_a_kp;
+    float motor_a_ki;
+    float motor_a_kd;
+    float motor_a_Tf;
+
+    float motor_b_kp;
+    float motor_b_ki;
+    float motor_b_kd;
+    float motor_b_Tf;
+
+    float motor_c_kp;
+    float motor_c_ki;
+    float motor_c_kd;
+    float motor_c_Tf;
+
+    float bf_trans_kp;
+    float bf_trans_ki;
+    float bf_trans_kd;
+    float bf_trans_Tf;
+
+    float bf_rot_kp;
+    float bf_rot_ki;
+    float bf_rot_kd;
+    float bf_rot_Tf;
+}
