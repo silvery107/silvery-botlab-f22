@@ -11,7 +11,7 @@ import lcm
 from mbot_lcm_msgs import mbot_motor_command_t, timestamp_t
 
 LIN_VEL_CMD = 0.15
-ANG_VEL_CMD = np.pi/4
+ANG_VEL_CMD = np.pi/3
 
 lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
 pygame.init()
@@ -80,10 +80,14 @@ while True:
     #         turn_vel += 1
             
     command = mbot_motor_command_t()
-    command.utime = 0 #current_utime()
+    command.utime = current_utime()
     command.trans_v = fwd_vel * LIN_VEL_CMD
     command.angular_v = turn_vel * ANG_VEL_CMD
     # print(command.trans_v,command.angular_v)
+
+    drive_time = timestamp_t()
+    drive_time.utime = command.utime
+    lc.publish("MBOT_TIMESYNC", drive_time.encode())
     lc.publish("MBOT_MOTOR_COMMAND", command.encode())
     # time.sleep(0.05)
     # rawCapture.truncate(0)
