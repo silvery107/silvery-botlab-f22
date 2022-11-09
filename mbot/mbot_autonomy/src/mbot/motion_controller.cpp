@@ -147,9 +147,9 @@ class SmartManeuverController : public ManeuverControllerBase
 {
 
 private:
-    float pid[3] = {1.0, 2.5, 0.0}; //kp, ka, kb
+    float pid[3] = {1.5, 8.7, 0.0}; //kp, ka, kb
     float d_end_crit = 0.02;
-    float d_end_midsteps = 0.08;
+    float d_end_midsteps = 0.02;
     float angle_end_crit = 0.2;
 public:
     SmartManeuverController() = default;   
@@ -174,7 +174,7 @@ public:
         float turn_vel = pid[1] * alpha + pid[2] * beta;
 
         // If alpha is more than 45 degrees, turn in place and then go
-        if (fabs(alpha) > M_PI_4)
+        if (fabs(alpha) > M_PI_4/4.f)
         {
             fwd_vel = 0;
         }
@@ -287,6 +287,33 @@ public:
             //     std::cerr << "ERROR: MotionController: Entered unknown state: " << state_ << '\n';
             // }
 		} 
+        cmd.utime = now();
+
+        float trans_diff = cmd.trans_v - last_cmd.trans_v;
+        if (abs(trans_diff) > trans_a_max*0.05){
+            if (trans_diff > 0) {
+                cmd.trans_v = last_cmd.trans_v + trans_a_max*0.05;
+            } else {
+                cmd.trans_v = last_cmd.trans_v - trans_a_max*0.05;
+            }
+        }
+        
+        float turn_diff = cmd.angular_v - last_cmd.angular_v;
+        if (abs(turn_diff) > angular_a_max*0.05){
+            int cmd_sign = cmd.angular_v > 0 ? 1 : -1;
+            int last_cmd_sign = last_cmd.angular_v > 0 ? 1 : -1;
+            if (cmd_sign == last_cmd_sign){
+                if (turn_diff > 0) {
+                    cmd.angular_v = last_cmd.angular_v + angular_a_max*0.05;
+                } else {
+                    cmd.angular_v = last_cmd.angular_v - angular_a_max*0.05;
+                }
+            }
+        }
+
+        last_cmd.utime = cmd.utime;
+        last_cmd.trans_v = cmd.trans_v;
+        last_cmd.angular_v = cmd.angular_v;
         return cmd; 
     }
 
@@ -343,6 +370,10 @@ private:
     std::vector<mbot_lcm_msgs::pose_xyt_t> targets_;
 
     State state_;
+
+    mbot_lcm_msgs::mbot_motor_command_t last_cmd = {now(), 0.0, 0.0};
+    float trans_a_max = 0.6;
+    float angular_a_max = M_PI_4;
 
     int64_t time_offset;
     bool timesync_initialized_;
@@ -421,7 +452,7 @@ int main(int argc, char** argv)
             else if (cmd.trans_v < -max_trans_vel) cmd.trans_v = -max_trans_vel;
 
             // Angular vel
-            float max_ang_vel = M_PI * 2.0 / 3.0;
+            float max_ang_vel = M_PI/2.f;
             if (cmd.angular_v > max_ang_vel) cmd.angular_v = max_ang_vel;
             else if (cmd.angular_v < -max_ang_vel) cmd.angular_v = -max_ang_vel;
 
