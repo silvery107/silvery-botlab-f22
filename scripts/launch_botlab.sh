@@ -99,4 +99,3 @@ $ROOT_DIR/bin/botgui
 # ln -sf $LOG_DIR/motion_controller_$TIMESTAMP.log $LOG_DIR/motion_controller_latest.log
 # ln -sf $LOG_DIR/slam_$TIMESTAMP.log $LOG_DIR/slam_latest.log
 
-# ./bin/botgui
