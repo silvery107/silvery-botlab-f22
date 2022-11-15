@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv)
 {
-    int numTimes = 3;
+    int numTimes = 1;
     
     if(argc > 1)
     {
