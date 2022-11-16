@@ -97,6 +97,7 @@ private:
     std::vector<mbot_lcm_msgs::exploration_status_t> exploreStatus_;  // Incoming status messages to process
     
     bool haveLaser_;
+    bool laserCW_;
     bool havePath_;
     bool haveTruePose_;
     mbot_lcm_msgs::pose_xyt_t initialTruePose_;
