@@ -26,6 +26,7 @@ void reset_state_pressed(GtkWidget* button, gpointer gui);
 BotGui::BotGui(lcm::LCM* lcmInstance, int argc, char** argv, int widthInPixels, int heightInPixels, int framesPerSecond)
 : VxGtkWindowBase(argc, argv, widthInPixels, heightInPixels, framesPerSecond)
 , haveLaser_(false)
+, laserCW_(true) //if laser is clockwise (old convention) or ccw (new convention)
 , havePath_(false)
 , haveTruePose_(false)
 , shouldResetStateLabels_(false)
@@ -376,6 +377,12 @@ void BotGui::handleLaser(const lcm::ReceiveBuffer* rbuf, const std::string& chan
 {
     std::lock_guard<std::mutex> autoLock(vxLock_);
     laser_ = *laser;
+    //reverse if using old convention
+    if(laserCW_){
+        for(int i=0; i < laser_.num_ranges; i++){
+            laser_.thetas[i] = 2.0 * M_PI - laser_.thetas[i];
+        }
+    }
     haveLaser_ = true;
 }
 

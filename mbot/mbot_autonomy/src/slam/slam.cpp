@@ -26,6 +26,7 @@ OccupancyGridSLAM::OccupancyGridSLAM(int numParticles,
 , waitingForOptitrack_(waitForOptitrack)
 , haveMap_(false)
 , running_(true)
+, laserCW_(true)
 , numIgnoredScans_(0)
 , iters_(0)
 , filter_(numParticles)
@@ -128,6 +129,7 @@ void OccupancyGridSLAM::stopSLAM()
 // Handlers for LCM messages
 void OccupancyGridSLAM::handleLaser(const lcm::ReceiveBuffer* rbuf, const std::string& channel, const mbot_lcm_msgs::lidar_t* scan)
 {
+
     const int kNumIgnoredForMessage = 10;   // number of scans to ignore before printing a message about odometry
     std::lock_guard<std::mutex> autoLock(dataMutex_);
     // Ignore scans until odometry data arrives -- need odometry before a scan to safely built the map
@@ -141,6 +143,12 @@ void OccupancyGridSLAM::handleLaser(const lcm::ReceiveBuffer* rbuf, const std::s
     // If there's appropriate odometry or pose data for this scan, then add it to the queue.
     if(haveOdom || havePose)
     {
+        mbot_lcm_msgs::lidar_t scan_ = *scan;
+        if(laserCW_){
+            for(int i=0; i < scan_.num_ranges; i++){
+                scan_.thetas[i] = 2.0 * M_PI - scan_.thetas[i];
+            }
+        }
         incomingScans_.push_back(*scan);
 
         // If we showed the laser error message, then provide another message indicating that laser scans are now

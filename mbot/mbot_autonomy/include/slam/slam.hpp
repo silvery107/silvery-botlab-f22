@@ -88,6 +88,7 @@ private:
     bool waitingForOptitrack_;
     bool haveMap_;
     bool running_;
+    bool laserCW_;
     int  numIgnoredScans_;
     int iters_;
     std::string mapFile_;
