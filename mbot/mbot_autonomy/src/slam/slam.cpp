@@ -366,8 +366,6 @@ void OccupancyGridSLAM::updateMap(void)
     if(mapUpdateCount_ % 5 == 0)
     {
         auto mapMessage = map_.toLCM();
-        mapMessage.slam_mode = mode_;
-        mapMessage.slam_map_location = mapFile_;
 
         lcm_.publish(SLAM_MAP_CHANNEL, &mapMessage);
         if (mode_ != localization_only)

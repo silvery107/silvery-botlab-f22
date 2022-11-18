@@ -12,10 +12,6 @@ struct occupancy_grid_t
     int32_t height;
     int32_t num_cells;
 
-    // SLAM state information.
-    int32_t slam_mode;          // mapping_only=0, action_only=1, localization_only=2, full_slam=3
-    string slam_map_location;   // only necessary when for localization-only and action_only modes
-
     // This should be the last element so it's easy to grab as bytes.
     int8_t cells[num_cells];
 }
