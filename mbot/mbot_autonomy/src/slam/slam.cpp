@@ -149,7 +149,7 @@ void OccupancyGridSLAM::handleLaser(const lcm::ReceiveBuffer* rbuf, const std::s
                 scan_.thetas[i] = 2.0 * M_PI - scan_.thetas[i];
             }
         }
-        incomingScans_.push_back(*scan);
+        incomingScans_.push_back(scan_);
 
         // If we showed the laser error message, then provide another message indicating that laser scans are now
         // being saved

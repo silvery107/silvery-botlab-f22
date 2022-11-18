@@ -33,6 +33,7 @@ public:
     * \param    map             OccupancyGrid instance to be updated
     */
     void updateMap(const mbot_lcm_msgs::lidar_t& scan, const mbot_lcm_msgs::pose_xyt_t& pose, OccupancyGrid& map);
+    static std::vector<Point<int>> bresenham(const adjusted_ray_t& ray, const OccupancyGrid& map);
 
 private:
     
@@ -44,7 +45,6 @@ private:
     mbot_lcm_msgs::pose_xyt_t previousPose_;
     void scoreEndpoint(const adjusted_ray_t& ray, OccupancyGrid& map);
     void scoreRay(const adjusted_ray_t& ray, OccupancyGrid& map);
-    std::vector<Point<int>> bresenham(const adjusted_ray_t& ray, const OccupancyGrid& map);
     std::vector<Point<int>> divideAndStepAlongRay(const adjusted_ray_t& ray, const OccupancyGrid& map);
     //////////////////// TODO: Add any private members needed for your occupancy grid mapping algorithm ///////////////
 

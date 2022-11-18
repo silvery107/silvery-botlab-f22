@@ -153,6 +153,8 @@ bool OccupancyGrid::loadFromFile(const std::string& filename)
     assert(height_ > 0);
     assert(metersPerCell_ > 0.0f);
     
+    cellsPerMeter_ = 1.0f / metersPerCell_;
+
     // Allocate new memory for the grid
     cells_.resize(width_ * height_);
     
