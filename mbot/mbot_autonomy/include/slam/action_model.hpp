@@ -68,13 +68,19 @@ private:
     double dtheta_;
     uint64_t utime_;
 
+    // Variables to track how much the robot has moved while following the trajectory
+    double rot1_;
+    double trans_;
+    double rot2_;
+
+    // Standard deviation associated with the motion of the robot
+    double rot1Std_;
+    double transStd_;
+    double rot2Std_;
+
     bool initialized_;
 
     std::mt19937 numberGenerator_;
-
-    float xStd_;
-    float yStd_;
-    float thetaStd_;
 };
 
 #endif // SLAM_ACTION_MODEL_HPP
