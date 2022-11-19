@@ -84,7 +84,7 @@ mbot_lcm_msgs::pose_xyt_t ParticleFilter::updateFilter(const mbot_lcm_msgs::pose
         posteriorPose_ = estimatePosteriorPose(posterior_);
     }
     posteriorPose_.utime = odometry.utime;
-
+    
     return posteriorPose_;
 }
 
@@ -131,6 +131,8 @@ ParticleList ParticleFilter::resamplePosteriorDistribution(const OccupancyGrid* 
     //////////// TODO: Implement your algorithm for resampling from the posterior distribution ///////////////////
     // Low variance sampler from Probabilistic Robotics
     ParticleList prior;
+    RandomPoseSampler randomPoseSampler(map);
+
     // random number
     std::random_device rd;
     std::default_random_engine generator(rd());
@@ -139,13 +141,17 @@ ParticleList ParticleFilter::resamplePosteriorDistribution(const OccupancyGrid* 
     double c = posterior_[0].weight;
     int i = 0;
     double U;
-    for (int m=0; m<kNumParticles_; m++){
-        U = r + m * 1.0 / (static_cast<double>(kNumParticles_));
-        while (U > c){
-            i += 1;
-            c += posterior_[i].weight;
+    for (int m = 0; m < kNumParticles_; m++){
+        if (samplingAugmentation.sample_randomly()){
+            prior.push_back(randomPoseSampler.get_particle());
+        } else {
+            U = r + m * 1.0 / (static_cast<double>(kNumParticles_));
+            while (U > c){
+                i += 1;
+                c += posterior_[i].weight;
+            }
+            prior.push_back(posterior_[i]);
         }
-        prior.push_back(posterior_[i]);
     }
 
     return prior;
@@ -174,12 +180,15 @@ ParticleList ParticleFilter::computeNormalizedPosterior(const ParticleList& prop
     ParticleList posterior;
 
     double sumWeights = 0.0;
+    double averageWeights = 0.0;
+    double M = 1.0 / static_cast<double>(kNumParticles_);
 
     for (auto &&p : proposal)
     {
         mbot_lcm_msgs::particle_t weighted = p;
         weighted.weight = sensorModel_.likelihood(weighted, laser, map);
         sumWeights += weighted.weight;
+        averageWeights += weighted.weight / M;
         posterior.push_back(weighted);
     }
 
@@ -188,7 +197,7 @@ ParticleList ParticleFilter::computeNormalizedPosterior(const ParticleList& prop
     {
         p.weight /= sumWeights;
     }
-
+    samplingAugmentation.insert_average_weight(averageWeights);
     return posterior;
 }
 
@@ -197,22 +206,17 @@ mbot_lcm_msgs::pose_xyt_t ParticleFilter::estimatePosteriorPose(const ParticleLi
 {
     //////// TODO: Implement your method for computing the final pose estimate based on the posterior distribution
     mbot_lcm_msgs::pose_xyt_t pose;
-    /***********************************************************************************
-     * TODO: Compute the final pose estimate based on the posterior distribution.
-     *       Figure out which pose to take for the posterior pose.
-     *       Weighted average is simple, but could be very bad and slow.
-     *       Maybe only take the best x% and then average.
-     *  - Copy a variable for posterior to avoid directly changing the values in posterior.
-     *  - Sort posterior vector of particles by weight in descending order.
-     *    Hint: std::sort(posterior_copy.begin( ), posterior_copy.end( ), [ ]( const particle_t& lhs, const particle_t& rhs )
-     *         {
-                   return lhs.weight > rhs.weight;
-     *         });
-     *  - Get a certain number of particles to be averaged (Best X%)
-     *  - Average particles in the to_be_averaged vector. Get the pose from the resulting particle.
-     *    Hint: Use computeParticlesAverage(to_be_averaged);
-     ***********************************************************************************/
-    pose = computeParticlesAverage(posterior);
+
+    ParticleList posterior_copy(posterior.begin(), posterior.end());
+    std::sort(posterior_copy.begin(), posterior_copy.end(), [ ]( const mbot_lcm_msgs::particle_t& lhs, const mbot_lcm_msgs::particle_t& rhs )
+    {
+        return lhs.weight > rhs.weight;
+    });
+    int best_pct_idx = posterior_copy.size() / 10 - 1;
+    ParticleList posterior_best(posterior_copy.begin(), posterior_copy.begin()+best_pct_idx);
+
+    pose = computeParticlesAverage(posterior_best);
+    // pose = computeParticlesAverage(posterior);
     return pose;
 }
 
