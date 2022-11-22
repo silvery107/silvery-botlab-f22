@@ -53,14 +53,10 @@ public:
                       const mbot_lcm_msgs::lidar_t& scan,
                       const OccupancyGrid& map);
     
-    double scoreRaySimple(const adjusted_ray_t& ray, const OccupancyGrid& map);
-    double scoreScanBeamModel(const MovingLaserScan& ray, const OccupancyGrid& map);
-    
-    float simulate_ray(
-            const Point<float>& origin,
-            const float& theta, 
-            const float& maxRange,
-            const OccupancyGrid& map);
+    double scoreRayLikelihoodModel(const adjusted_ray_t& ray, const OccupancyGrid& map);
+    double scoreScanBeamModel(const MovingLaserScan& movingScan, const OccupancyGrid& map);
+    float simulate_ray(const Point<float>& origin, const float& theta,  const float& maxRange, const OccupancyGrid& map);
+    CellOdds bresenhamOnce(const Point<int> end_cell, const Point<int> start_cell, const OccupancyGrid& map);
 
     float max_scan_score;  // TODO: make getter
 

@@ -6,7 +6,7 @@
 #include <common_utils/geometric/point.hpp>
 #include <slam/mapping.hpp>
 SensorModel::SensorModel(void)
-:   ray_stride_(5)
+:   ray_stride_(1)
 {
 }
 
@@ -17,12 +17,12 @@ double SensorModel::likelihood(const mbot_lcm_msgs::particle_t& sample,
     double likelihood = 0.0;
     MovingLaserScan movingScan(scan, sample.parent_pose, sample.pose, ray_stride_);
     
-    // for(auto&& ray : movingScan)
-    // {
-    //     likelihood += scoreRaySimple(ray, map);
-    // }
+    for(auto&& ray : movingScan)
+    {
+        likelihood += scoreRayLikelihoodModel(ray, map);
+    }
 	
-	likelihood = scoreScanBeamModel(movingScan, map);
+	// likelihood = scoreScanBeamModel(movingScan, map);
 
 	return likelihood;
 }
@@ -99,23 +99,60 @@ float SensorModel::simulate_ray(
 	return minRangeMeters;
 }
 
-double SensorModel::scoreRaySimple(const adjusted_ray_t& ray, const OccupancyGrid& map)
+double SensorModel::scoreRayLikelihoodModel(const adjusted_ray_t& ray, const OccupancyGrid& map)
 {
-    Point<int> point = global_position_to_grid_cell(
+	double frac = 0.5;
+	Point<int> rayStart = global_position_to_grid_cell(ray.origin, map);
+	Point<int> rayEnd = global_position_to_grid_cell(
         Point<float>(
             ray.origin.x + ray.range * std::cos(ray.theta),
             ray.origin.y + ray.range * std::sin(ray.theta)
         ), 
-    map
-    );
+    	map
+    	);
+	Point<int> rayExtended = global_position_to_grid_cell(
+        Point<float>(
+            ray.origin.x + 2 * ray.range * std::cos(ray.theta),
+            ray.origin.y + 2 * ray.range * std::sin(ray.theta)
+        ), 
+		map
+		);
+	
+	CellOdds endOdds = map.logOdds(rayEnd.x, rayEnd.y);
+	if (endOdds > 0){
+		return static_cast<double>(endOdds);
+	} else {
+		CellOdds proximalOdds = bresenhamOnce(rayStart, rayEnd, map);
+		CellOdds distalOdds = bresenhamOnce(rayEnd, rayExtended, map);
+		
+		if (proximalOdds > 0){
+			return frac * static_cast<double>(proximalOdds);
+		} else if (distalOdds > 0){
+			return frac * static_cast<double>(distalOdds);
+		}
+	}
+}
+
+CellOdds SensorModel::bresenhamOnce(const Point<int> endCell, const Point<int> startCell, const OccupancyGrid& map){
+
+    int dx = abs(endCell.x - startCell.x);
+    int dy = abs(endCell.y - startCell.y);
+    int sx = startCell.x < endCell.x ? 1 : -1;
+    int sy = startCell.y < endCell.y ? 1 : -1;
+    int err = dx - dy;
+    int x = startCell.x;
+    int y = startCell.y;
+
+	// Search along the line once
+	float e2 = 2*err;
+	if (e2 >= -dy){
+		err -= dy;
+		x += sx;
+	}
+	if (e2 <= dx){
+		err += dx;
+		y += sy;
+	}
     
-    if (map.isCellInGrid(point.x, point.y)){
-        CellOdds cellOdds = map.logOdds(point.x, point.y);
-        if (cellOdds > 0){
-            return (double)cellOdds;
-        } else {
-            return 0.0;
-        }
-    }
-    
+	return map.logOdds(x, y);
 }
