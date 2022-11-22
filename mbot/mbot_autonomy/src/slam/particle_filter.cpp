@@ -131,7 +131,7 @@ ParticleList ParticleFilter::resamplePosteriorDistribution(const OccupancyGrid* 
     //////////// TODO: Implement your algorithm for resampling from the posterior distribution ///////////////////
     // Low variance sampler from Probabilistic Robotics
     ParticleList prior;
-    RandomPoseSampler randomPoseSampler(map);
+    // RandomPoseSampler randomPoseSampler(map);
 
     // random number
     std::random_device rd;
@@ -142,16 +142,16 @@ ParticleList ParticleFilter::resamplePosteriorDistribution(const OccupancyGrid* 
     int i = 0;
     double U;
     for (int m = 0; m < kNumParticles_; m++){
-        if (samplingAugmentation.sample_randomly()){
-            prior.push_back(randomPoseSampler.get_particle());
-        } else {
+        // if (samplingAugmentation.sample_randomly()){
+        //     prior.push_back(randomPoseSampler.get_particle());
+        // } else {
             U = r + m * 1.0 / (static_cast<double>(kNumParticles_));
             while (U > c){
                 i += 1;
                 c += posterior_[i].weight;
             }
             prior.push_back(posterior_[i]);
-        }
+        // }
     }
 
     return prior;
@@ -180,7 +180,7 @@ ParticleList ParticleFilter::computeNormalizedPosterior(const ParticleList& prop
     ParticleList posterior;
 
     double sumWeights = 0.0;
-    double averageWeights = 0.0;
+    // double averageWeights = 0.0;
     double M = 1.0 / static_cast<double>(kNumParticles_);
 
     for (auto &&p : proposal)
@@ -188,7 +188,7 @@ ParticleList ParticleFilter::computeNormalizedPosterior(const ParticleList& prop
         mbot_lcm_msgs::particle_t weighted = p;
         weighted.weight = sensorModel_.likelihood(weighted, laser, map);
         sumWeights += weighted.weight;
-        averageWeights += weighted.weight / M;
+        // averageWeights += weighted.weight / M;
         posterior.push_back(weighted);
     }
 
@@ -197,7 +197,7 @@ ParticleList ParticleFilter::computeNormalizedPosterior(const ParticleList& prop
     {
         p.weight /= sumWeights;
     }
-    samplingAugmentation.insert_average_weight(averageWeights);
+    // samplingAugmentation.insert_average_weight(averageWeights);
     return posterior;
 }
 
