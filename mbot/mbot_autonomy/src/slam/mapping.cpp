@@ -68,13 +68,13 @@ void Mapping::scoreRay(const adjusted_ray_t& ray, OccupancyGrid& map)
         std::min(ray.range,kMaxLaserDistance_),
         ray.theta
     };
-    std::vector<Point<int>> rayPoints = bresenham(rayCapped,map);
+    std::vector<Point<int>> rayPoints = bresenham(rayCapped, map);
     for (auto& point : rayPoints){
         // Decrease cell logodds
-        if (map.isCellInGrid(point.x,point.y)){
+        if (map.isCellInGrid(point.x, point.y)){
             CellOdds prevOdds = map.logOdds(point.x, point.y);
             if (prevOdds - kMissOdds_ <= -127) {
-                 map.setLogOdds(point.x, point.y, -127);
+                map.setLogOdds(point.x, point.y, -127);
             } else {
                 map.setLogOdds(point.x, point.y, prevOdds - kMissOdds_);
             }
