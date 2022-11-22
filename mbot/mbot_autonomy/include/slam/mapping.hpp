@@ -34,6 +34,8 @@ public:
     */
     void updateMap(const mbot_lcm_msgs::lidar_t& scan, const mbot_lcm_msgs::pose_xyt_t& pose, OccupancyGrid& map);
     static std::vector<Point<int>> bresenham(const adjusted_ray_t& ray, const OccupancyGrid& map);
+    void bresenham_jit(const adjusted_ray_t& ray, OccupancyGrid& map);
+    void decreaseLogOdds(int x, int y, OccupancyGrid& map);
 
 private:
     
