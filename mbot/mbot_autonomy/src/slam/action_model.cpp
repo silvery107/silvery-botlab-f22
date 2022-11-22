@@ -8,9 +8,9 @@
 
 
 ActionModel::ActionModel(void)
-: k1_(0.015f)
-, k2_(0.25f)
-, min_dist_(0.0025)
+: k1_(0.8f)
+, k2_(0.3f)
+, min_dist_(0.0002)
 , min_theta_(0.02)
 , initialized_(false)
 {
@@ -23,7 +23,7 @@ ActionModel::ActionModel(void)
 
 void ActionModel::resetPrevious(const mbot_lcm_msgs::pose_xyt_t& odometry)
 {
-    previousPose_ = odometry;
+    // previousPose_ = odometry;
 }
 
 
@@ -31,6 +31,7 @@ bool ActionModel::updateAction(const mbot_lcm_msgs::pose_xyt_t& odometry)
 {
     ////////////// TODO: Implement code here to compute a new distribution of the motion of the robot ////////////////
     bool moved = 0;
+    float direction = 1.0; // rotation direction
     
     if (!initialized_) {
         resetPrevious(odometry);
@@ -40,10 +41,24 @@ bool ActionModel::updateAction(const mbot_lcm_msgs::pose_xyt_t& odometry)
     dx_ = odometry.x - previousPose_.x;
     dy_ = odometry.y - previousPose_.y;
     dtheta_ = angle_diff(odometry.theta, previousPose_.theta);
-    
+
     rot1_ = angle_diff(std::atan2(dy_, dx_), previousPose_.theta);
     trans_ = std::sqrt(dx_ * dx_ + dy_ * dy_);
+
+    // TODO we have to figure out why this make sense
+    if(std::abs(trans_) < min_dist_){
+        rot1_ = 0.0f;
+    }
+
+    // If the angle traveled is too big for this time step, then it means we went backwards
+    if (std::abs(rot1_) > M_PI_2)
+    {
+        rot1_ = angle_diff(M_PI, rot1_);
+        direction = -1.0;
+    }
+
     rot2_ = angle_diff(dtheta_, rot1_);
+    trans_ *= direction;
 
     moved = (dx_ != 0) || (dy_ != 0) || (dtheta_ != 0);
 
