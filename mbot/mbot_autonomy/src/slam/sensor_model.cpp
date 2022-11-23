@@ -83,14 +83,14 @@ float SensorModel::simulate_ray(
 	int minRangeCellsSquared = -1;
 	int rangeCellsSquared;
 	for (auto&& cell : rayCells) {
-		if (map.isCellInGrid(cell.x, cell.y)) {
+		// if (map.isCellInGrid(cell.x, cell.y)) {
 			if (map.logOdds(cell.x, cell.y) > 0) {
 				rangeCellsSquared = pow(originCell.x - cell.x, 2) + pow(originCell.y - cell.y, 2);
 				if ((minRangeCellsSquared < 0) || (rangeCellsSquared < minRangeCellsSquared)) {
 					minRangeCellsSquared = rangeCellsSquared;
 				}
 			}
-		}
+		// }
 	}
 
 	// Calculate distance in meters to closest occupied cell

@@ -48,16 +48,15 @@ void Mapping::scoreEndpoint(const adjusted_ray_t& ray, OccupancyGrid& map)
         map
         );
         // Increase cell logodds
-        if (map.isCellInGrid(point.x,point.y)){
+        // if (map.isCellInGrid(point.x,point.y)){
             CellOdds prevOdds = map.logOdds(point.x, point.y);
             if ((prevOdds + kHitOdds_) >= 127) {
                 map.setLogOdds(point.x, point.y, 127);
             } else {
                 map.setLogOdds(point.x, point.y, prevOdds + kHitOdds_);
             }
-        }
+        // }
     }
-
 }
 
 void Mapping::scoreRay(const adjusted_ray_t& ray, OccupancyGrid& map)
@@ -71,14 +70,7 @@ void Mapping::scoreRay(const adjusted_ray_t& ray, OccupancyGrid& map)
     // std::vector<Point<int>> rayPoints = bresenham(rayCapped, map);
     // for (auto& point : rayPoints){
     //     // Decrease cell logodds
-    //     if (map.isCellInGrid(point.x, point.y)){
-    //         CellOdds prevOdds = map.logOdds(point.x, point.y);
-    //         if (prevOdds - kMissOdds_ <= -127) {
-    //             map.setLogOdds(point.x, point.y, -127);
-    //         } else {
-    //             map.setLogOdds(point.x, point.y, prevOdds - kMissOdds_);
-    //         }
-    //     }
+    //     decreaseLogOdds(point.x, point.y, map);
     // }
     bresenham_jit(rayCapped, map);
 }
@@ -177,12 +169,12 @@ std::vector<Point<int>> Mapping::divideAndStepAlongRay(const adjusted_ray_t& ray
 
 void Mapping::decreaseLogOdds(int x, int y, OccupancyGrid& map){
     // Decrease cell logodds
-    if (map.isCellInGrid(x, y)){
+    // if (map.isCellInGrid(x, y)){
         CellOdds prevOdds = map.logOdds(x, y);
         if (prevOdds - kMissOdds_ <= -127) {
             map.setLogOdds(x, y, -127);
         } else {
             map.setLogOdds(x, y, prevOdds - kMissOdds_);
         }
-    }
+    // }
 }
