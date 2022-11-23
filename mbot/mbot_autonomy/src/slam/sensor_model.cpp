@@ -6,7 +6,7 @@
 #include <common_utils/geometric/point.hpp>
 #include <slam/mapping.hpp>
 SensorModel::SensorModel(void)
-:   ray_stride_(2)
+: ray_stride_(3)
 {
 }
 
@@ -19,7 +19,9 @@ double SensorModel::likelihood(const mbot_lcm_msgs::particle_t& sample,
     
     for(auto&& ray : movingScan)
     {
-        likelihood += scoreRayLikelihoodModel(ray, map);
+		if (ray.range < 5.0f){
+        	likelihood += scoreRayLikelihoodModel(ray, map);
+		}
     }
 	
 	// likelihood = scoreScanBeamModel(movingScan, map);
@@ -123,14 +125,15 @@ double SensorModel::scoreRayLikelihoodModel(const adjusted_ray_t& ray, const Occ
 		return static_cast<double>(endOdds);
 	} else {
 		CellOdds proximalOdds = bresenhamOnce(rayStart, rayEnd, map);
-		CellOdds distalOdds = bresenhamOnce(rayEnd, rayExtended, map);
-		
 		if (proximalOdds > 0){
 			return frac * static_cast<double>(proximalOdds);
-		} else if (distalOdds > 0){
+		}
+		CellOdds distalOdds = bresenhamOnce(rayExtended, rayEnd, map);
+		if (distalOdds > 0){
 			return frac * static_cast<double>(distalOdds);
 		}
 	}
+	return 0.0;
 }
 
 CellOdds SensorModel::bresenhamOnce(const Point<int> endCell, const Point<int> startCell, const OccupancyGrid& map){
@@ -139,18 +142,15 @@ CellOdds SensorModel::bresenhamOnce(const Point<int> endCell, const Point<int> s
     int dy = abs(endCell.y - startCell.y);
     int sx = startCell.x < endCell.x ? 1 : -1;
     int sy = startCell.y < endCell.y ? 1 : -1;
-    int err = dx - dy;
+    int err = 2 * (dx - dy);
     int x = startCell.x;
     int y = startCell.y;
 
 	// Search along the line once
-	float e2 = 2*err;
-	if (e2 >= -dy){
-		err -= dy;
+	if (err >= -dy){
 		x += sx;
 	}
-	if (e2 <= dx){
-		err += dx;
+	if (err <= dx){
 		y += sy;
 	}
     
