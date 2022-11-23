@@ -22,18 +22,18 @@ void ParticleFilter::initializeFilterAtPose(const mbot_lcm_msgs::pose_xyt_t& pos
     ////////////// TODO: Implement your method for initializing the particles in the particle filter /////////////////
     // Initialize the particles in the particle filter
     double sampleWeight = 1.0 / kNumParticles_;
-    // std::random_device rd;
-    // std::mt19937 generator(rd());
-    // std::normal_distribution<float> dist(0.0, 0.01);
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::normal_distribution<float> dist(0.0, 0.01);
 
     posteriorPose_ = pose;
 
     for (auto &&p : posterior_)
     {
         p.pose = pose;
-        // p.pose.x += dist(generator);
-        // p.pose.y += dist(generator);
-        // p.pose.theta += dist(generator);
+        p.pose.x += dist(generator);
+        p.pose.y += dist(generator);
+        p.pose.theta += dist(generator);
 
         p.parent_pose = p.pose;
 

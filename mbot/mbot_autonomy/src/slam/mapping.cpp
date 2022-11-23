@@ -114,7 +114,7 @@ std::vector<Point<int>> Mapping::bresenham(const adjusted_ray_t& ray, const Occu
     int y = start_cell.y;
     while(x != end_cell.x || y != end_cell.y){
         cells_touched.push_back(Point<int>(x, y));
-        float e2 = 2*err;
+        int e2 = 2 * err;
         if (e2 >= -dy){
             err -= dy;
             x += sx;
@@ -152,7 +152,7 @@ void Mapping::bresenham_jit(const adjusted_ray_t& ray, OccupancyGrid& map){
     int y = start_cell.y;
     while(x != end_cell.x || y != end_cell.y){
         decreaseLogOdds(x, y, map);
-        float e2 = 2*err;
+        int e2 = 2 * err;
         if (e2 >= -dy){
             err -= dy;
             x += sx;

@@ -11,12 +11,12 @@ import lcm
 from mbot_lcm_msgs import mbot_motor_command_t, timestamp_t
 
 LIN_VEL_CMD = 0.15
-ANG_VEL_CMD = np.pi/3
+ANG_VEL_CMD = np.pi/5
 
 lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
 pygame.init()
 pygame.display.set_caption("MBot TeleOp")
-screen = pygame.display.set_mode([640,480])
+screen = pygame.display.set_mode([320,240])
 # pygame.key.set_repeat(100)
 # camera = PiCamera()
 # camera.resolution = (640, 480)

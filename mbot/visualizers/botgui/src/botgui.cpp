@@ -26,7 +26,7 @@ void reset_state_pressed(GtkWidget* button, gpointer gui);
 BotGui::BotGui(lcm::LCM* lcmInstance, int argc, char** argv, int widthInPixels, int heightInPixels, int framesPerSecond)
 : VxGtkWindowBase(argc, argv, widthInPixels, heightInPixels, framesPerSecond)
 , haveLaser_(false)
-, laserCW_(true) //if laser is clockwise (old convention) or ccw (new convention)
+, laserCW_(false) //if laser is clockwise (old convention) or ccw (new convention)
 , havePath_(false)
 , haveTruePose_(false)
 , shouldResetStateLabels_(false)

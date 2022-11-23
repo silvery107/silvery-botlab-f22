@@ -58,7 +58,6 @@ bool ActionModel::updateAction(const mbot_lcm_msgs::pose_xyt_t& odometry)
     }
 
     rot2_ = angle_diff(dtheta_, rot1_);
-    trans_ *= direction;
 
     moved = (dx_ != 0) || (dy_ != 0) || (dtheta_ != 0);
 
@@ -72,6 +71,7 @@ bool ActionModel::updateAction(const mbot_lcm_msgs::pose_xyt_t& odometry)
         rot2Std_ = k1_ * rot2_;
     }
 
+    trans_ *= direction;
     utime_ = odometry.utime;
     previousPose_ = odometry;
 
