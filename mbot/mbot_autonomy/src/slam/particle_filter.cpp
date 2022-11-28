@@ -45,12 +45,14 @@ void ParticleFilter::initializeFilterRandomly(const OccupancyGrid& map)
 {
     ////////////// TODO: Implement your method for initializing the particles in the particle filter /////////////////
     RandomPoseSampler randomPoseSampler(&map);
+    double sampleWeight = 1.0 / kNumParticles_;
     
     posteriorPose_ = randomPoseSampler.get_pose();
     
     for (auto &&p : posterior_)
     {
         p = randomPoseSampler.get_particle();
+        p.weight = sampleWeight;
     }
 }
 
