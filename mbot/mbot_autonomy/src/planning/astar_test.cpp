@@ -19,7 +19,7 @@
 #include <iostream>
 #include <iterator>
 #include <map>
-
+using namespace mbot_lcm_msgs;
 
 // LCM DEFS TO SEND DATA TO A BOTGUI 
 #define MULTICAST_URL "udpm://239.255.76.67:7667?ttl=2"

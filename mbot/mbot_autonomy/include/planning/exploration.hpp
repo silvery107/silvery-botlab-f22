@@ -99,7 +99,7 @@ private:
     lcm::LCM* lcmInstance_;             // Instance of LCM to use for sending out information
     std::mutex dataLock_;               // Lock to keep the LCM and explore threads properly synchronized
     
-    /////////// TODO: Add any state variables you might need here //////////////
+    //////////// TODO: Add any state variables you might need here //////////////
     
     mbot_lcm_msgs::pose_xyt_t   currentTarget_;  // Current target robot is driving to
     OccupancyGrid exploredMap_;     // Map found after completing the RETURNING_HOME state
@@ -126,7 +126,7 @@ private:
     int8_t executeCompleted(bool initialize);
     int8_t executeFailed(bool initialize);
     
-    /////////// TODO: Add any additional methods you might need here //////////////
+    //////////// TODO: Add any additional methods you might need here //////////////
     
     /////////////////////////// End student code ///////////////////////////////
 };

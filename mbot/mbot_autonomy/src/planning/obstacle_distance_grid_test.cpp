@@ -26,20 +26,20 @@ int main(int argc, char** argv)
 {
     if(test_unknown_distances())
     {
-        std::cout << "PASSED: test_unknown_distances\n";
+        std::cout << "PASSED: test_unknown_distances\n\n";
     }
     else
     {
-        std::cout << "FAILED: test_unknown_distances\n";
+        std::cout << "FAILED: test_unknown_distances\n\n";
     }
     
     if(test_obstacle_distances())
     {
-        std::cout << "PASSED: test_obstacle_distances\n";
+        std::cout << "PASSED: test_obstacle_distances\n\n";
     }
     else
     {
-        std::cout << "FAILED: test_obstacle_distances\n";
+        std::cout << "FAILED: test_obstacle_distances\n\n";
     }
     
     if(test_free_space_distances())
@@ -150,7 +150,7 @@ bool test_free_space_distances(void)
         }
     }
     
-    std::cout << "Free test result: Num free cells:" << numFreeCells << " Num correct dists:" 
+    std::cout << "\nFree test result: Num free cells:" << numFreeCells << " Num correct dists:" 
         << numCorrectFreeDistances << '\n';
         
     return numFreeCells == numCorrectFreeDistances;

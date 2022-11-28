@@ -111,7 +111,7 @@ frontier_processing_t plan_path_to_frontier(const std::vector<frontier_t>& front
                                             const OccupancyGrid& map,
                                             const MotionPlanner& planner)
 {
-    ///////////// TODO: Implement your strategy to select the next frontier to explore here //////////////////
+    ////////////// TODO: Implement your strategy to select the next frontier to explore here //////////////////
     /*
     * NOTES:
     *   - If there's multiple frontiers, you'll need to decide which to drive to.

@@ -127,3 +127,48 @@ target_link_libraries(autonomy_lib
   lcm
 )
 target_include_directories(autonomy_lib PUBLIC include)
+
+# Planning Test Files
+# astar test
+add_executable(astar_test src/planning/astar_test.cpp
+  src/planning/motion_planner.cpp 
+  src/slam/occupancy_grid.cpp 
+  src/planning/obstacle_distance_grid.cpp
+  src/planning/astar.cpp 
+)
+target_link_libraries(astar_test
+  mbot_lcm_msgs-cpp
+  common_utils
+  lcm
+  ${CMAKE_THREAD_LIBS_INIT}
+)
+target_include_directories(astar_test PRIVATE
+  include
+)
+# grid generator for astar test
+add_executable(grid_generator src/planning/grid_generator.cpp
+  src/slam/occupancy_grid.cpp
+)
+target_link_libraries(grid_generator
+  mbot_lcm_msgs-cpp
+  common_utils
+  lcm
+  ${CMAKE_THREAD_LIBS_INIT}
+)
+target_include_directories(grid_generator PRIVATE
+  include
+)
+# obstacle distance grid test
+add_executable(obstacle_distance_grid_test src/planning/obstacle_distance_grid_test.cpp
+  src/slam/occupancy_grid.cpp
+  src/planning/obstacle_distance_grid.cpp
+)
+target_link_libraries(obstacle_distance_grid_test
+  mbot_lcm_msgs-cpp
+  common_utils
+  lcm
+  ${CMAKE_THREAD_LIBS_INIT}
+)
+target_include_directories(obstacle_distance_grid_test PRIVATE
+  include
+)

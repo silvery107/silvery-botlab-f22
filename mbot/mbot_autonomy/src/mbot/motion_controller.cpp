@@ -21,7 +21,7 @@
 
 #include "maneuver_controller.h"
 
-/////////////////////// TODO: /////////////////////////////
+////////////////////// TODO: /////////////////////////////
 /**
  * Code below is a little more than a template. You will need
  * to update the maneuver controllers to function more effectively
@@ -239,7 +239,7 @@ public:
                 else cmd = smart_controller.get_command(pose, target);
             }
 
-            ///////  TODO: Add different states when adding maneuver controls /////// 
+            ////////  TODO: Add different states when adding maneuver controls /////// 
             if(state_ == INITIAL_TURN)
             { 
                 if(turn_controller.target_reached(pose, target, is_last_target))
