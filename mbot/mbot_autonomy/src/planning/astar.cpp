@@ -29,6 +29,58 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         return path;
     }
 
+    start_node.h_cost = h_cost(&start_node, &goal_node, distances);
+    start_node.g_cost = 0.0;
+    PriorityQueue open_set;
+    std::vector<Node*> closed_set;
+    open_set.push(&start_node);
+    while (!open_set.empty() || open_set.Q.size()>10000){
+        auto cur_node = open_set.pop();
+        // printf("Open set size: %d\n", open_set.Q.size());
+        // printf("Get cur node (%d, %d)\n", cur_node->cell.x, cur_node->cell.y);
+        if (*cur_node == goal_node){
+            std::vector<Node*> temp_path = extract_node_path(cur_node, &start_node);
+            path.path = extract_pose_path(temp_path, distances);
+            path_found = true;
+            break;
+        }
+        std::vector<Node*> successors = expand_node(cur_node, distances, params);
+        
+        for (auto & node : successors){
+            double temp_g_cost = cur_node->g_cost + g_cost(cur_node, node, distances, params);
+            double node_g_cost = node->g_cost;
+            Node *node_in_open = open_set.get_member(node);
+            if (node_in_open != NULL){
+                node_g_cost = node_in_open->g_cost;
+            }
+            if (temp_g_cost < node_g_cost){
+                if (node_in_open != NULL){
+                    node_in_open->parent = cur_node;
+                    node_in_open->g_cost = temp_g_cost;
+                } else{
+                    node->parent = cur_node;
+                    node->g_cost = temp_g_cost;
+                    node->h_cost = h_cost(node, &goal_node, distances);
+                    if (!is_in_list(node, closed_set))
+                        open_set.push(node);
+                    else
+                        delete node;
+                }
+            }
+        }
+        closed_set.push_back(cur_node);
+    }
+
+    if (!path_found){
+        path.path.clear();
+        path.path.push_back(start);
+        path.path_length = path.path.size();
+        path.utime = utime_now();
+        return path;
+    }
+
+    path.path_length = path.path.size();
+    path.utime = utime_now();
     return path;
 }
 
