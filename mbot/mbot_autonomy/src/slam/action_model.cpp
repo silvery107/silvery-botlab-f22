@@ -8,8 +8,8 @@
 
 
 ActionModel::ActionModel(void)
-: k1_(0.8f)
-, k2_(0.3f)
+: k1_(0.08f)
+, k2_(0.03f)
 , min_dist_(0.0002)
 , min_theta_(0.02)
 , initialized_(false)
@@ -23,7 +23,7 @@ ActionModel::ActionModel(void)
 
 void ActionModel::resetPrevious(const mbot_lcm_msgs::pose_xyt_t& odometry)
 {
-    // previousPose_ = odometry;
+    previousPose_ = odometry;
 }
 
 
@@ -66,9 +66,9 @@ bool ActionModel::updateAction(const mbot_lcm_msgs::pose_xyt_t& odometry)
         transStd_ = 0;
         rot2Std_ = 0;
     } else {
-        rot1Std_ = k1_ * rot1_;
-        transStd_ = k2_ * trans_;
-        rot2Std_ = k1_ * rot2_;
+        rot1Std_ = abs(k1_ * rot1_);
+        transStd_ = abs(k2_ * trans_);
+        rot2Std_ = abs(k1_ * rot2_);
     }
 
     trans_ *= direction;
@@ -94,8 +94,8 @@ mbot_lcm_msgs::particle_t ActionModel::applyAction(const mbot_lcm_msgs::particle
 
     newSample.pose.x += trans_hat*std::cos(angle_sum(sample.pose.theta, rot1_hat));
     newSample.pose.y += trans_hat*std::sin(angle_sum(sample.pose.theta, rot1_hat));
-    newSample.pose.theta +=  angle_sum(rot1_hat, rot2_hat);
-    
+    newSample.pose.theta = angle_sum(newSample.pose.theta, angle_sum(rot1_hat, rot2_hat));
+
     newSample.parent_pose = sample.pose;
     newSample.pose.utime = utime_;
     return newSample;
