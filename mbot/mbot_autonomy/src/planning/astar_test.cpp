@@ -124,12 +124,14 @@ int main(int argc, char** argv)
     if(useGui)printf("\n ~~ MAKE SURE YOU ZOOM-OUT IN YOUR GUI TO SEE THE MAP ~~\n");
     typedef bool (*test_func) (void);
 
-    std::vector<test_func> tests = { test_empty_grid,
-                                                 test_filled_grid,
-                                                 test_narrow_constriction_grid,
-                                                 test_wide_constriction_grid,
-                                                 test_convex_grid,
-                                                 test_maze_grid};
+    std::vector<test_func> tests = {
+                                    // test_empty_grid,
+                                    // test_filled_grid,
+                                    // test_narrow_constriction_grid,
+                                    // test_wide_constriction_grid,
+                                    // test_convex_grid,
+                                    test_maze_grid
+                                    };
     std::vector<test_func> selected_func_vec;
     if(selected_test != 6)
     {

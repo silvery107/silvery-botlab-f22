@@ -158,8 +158,6 @@ bool OccupancyGrid::loadFromFile(const std::string& filename)
     // Allocate new memory for the grid
     cells_.resize(width_ * height_);
     
-    // Allocate new memory for the grid
-    cells_.resize(width_ * height_);
     // Read in each cell value
     int odds = 0; // read in as an int so it doesn't convert the number to the corresponding ASCII code
     for(int y = 0; y < height_; ++y)
