@@ -34,6 +34,7 @@ void ParticleFilter::initializeFilterAtPose(const mbot_lcm_msgs::pose_xyt_t& pos
         p.pose.x += dist(generator);
         p.pose.y += dist(generator);
         p.pose.theta += dist(generator);
+        p.pose.utime = pose.utime;
 
         p.parent_pose = p.pose;
 

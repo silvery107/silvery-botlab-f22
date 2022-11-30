@@ -45,11 +45,6 @@ bool ActionModel::updateAction(const mbot_lcm_msgs::pose_xyt_t& odometry)
     rot1_ = angle_diff(std::atan2(dy_, dx_), previousPose_.theta);
     trans_ = std::sqrt(dx_ * dx_ + dy_ * dy_);
 
-    // TODO we have to figure out why this make sense
-    if(std::abs(trans_) < min_dist_){
-        rot1_ = 0.0f;
-    }
-
     // If the angle traveled is too big for this time step, then it means we went backwards
     if (std::abs(rot1_) > M_PI_2)
     {
