@@ -1,6 +1,7 @@
 #!/bin/bash
 sudo ifconfig lo multicast
 sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev lo
+python python/reset_odometry.py
 
 help()
 {
@@ -69,6 +70,8 @@ $ROOT_DIR/bin/timesync &> $LOG_DIR/timesync.log &
 $ROOT_DIR/bin/rplidar_driver &> $LOG_DIR/rplidar_driver.log &
 $ROOT_DIR/bin/pico_shim &> $LOG_DIR/pico_shim.log &
 
+python python/reset_encoders.py
+
 if [[ RUN_CONTROLLER -eq 1 ]]; then
     echo "Launching motion controller."
     $ROOT_DIR/bin/motion_controller &> $LOG_DIR/motion_controller.log &
@@ -100,4 +103,11 @@ $ROOT_DIR/bin/botgui
 # ln -sf $LOG_DIR/slam_$TIMESTAMP.log $LOG_DIR/slam_latest.log
 
 echo "Cleaning up any running MBot code."
-$ROOT_DIR/cleanup_botlab.sh
+pkill slam
+pkill motion_controll
+pkill rplidar_driver
+
+python python/stop_mbot.py
+echo "Stopping mbot......"
+pkill pico_shim
+pkill timesync

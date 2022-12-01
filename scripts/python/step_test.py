@@ -63,10 +63,10 @@ def drive_square(vel_fwd, vel_trun, length):
         stop(1)
         rotate(vel_trun, turn_time)
         stop(1)
-
-drive_forward(0.25, 4, True)
-# drive_forward(-0.25, 3, True)
-# rotate(1, 4, True)
-# rotate(-1, 4, True)
-# stop(1)
-# drive_square(0.25, np.pi/3, 0.5)
+if __name__ == "__main__":
+    drive_forward(0.25, 4, True)
+    # drive_forward(-0.25, 3, True)
+    # rotate(1, 4, True)
+    # rotate(-1, 4, True)
+    stop(1)
+    # drive_square(0.25, np.pi/3, 0.5)
