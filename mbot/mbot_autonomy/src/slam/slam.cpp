@@ -98,7 +98,7 @@ void OccupancyGridSLAM::runSLAM(void)
         {
             // Then run an iteration of our SLAM algorithm
             runSLAMIteration();
-            iters_++;
+            // iters_++;
         }
         // Otherwise, do a quick spin while waiting for data rather than using more complicated condition variable.
         else
@@ -252,10 +252,10 @@ void OccupancyGridSLAM::runSLAMIteration(void)
     }
 
     // Update odometry to match SLAM, but only if we've been running for a while.
-    if (iters_ > 100)
-    {
-        bool reset = updateOdometry(currentOdometry_, currentPose_);
-    }
+    // if (iters_ > 100)
+    // {
+    //     bool reset = updateOdometry(currentOdometry_, currentPose_);
+    // }
 }
 
 

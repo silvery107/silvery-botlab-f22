@@ -8,8 +8,8 @@
 
 
 ActionModel::ActionModel(void)
-: k1_(0.08f)
-, k2_(0.03f)
+: k1_(0.8f)
+, k2_(0.3f)
 , min_dist_(0.0002)
 , min_theta_(0.02)
 , initialized_(false)

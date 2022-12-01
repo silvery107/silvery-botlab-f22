@@ -21,8 +21,8 @@ void Mapping::updateMap(const mbot_lcm_msgs::lidar_t& scan,
     if (!initialized_)
     {
         previousPose_ = pose;
+        initialized_ = true;
     }
-    initialized_ = true;
 
     MovingLaserScan adjustedrays(scan, previousPose_, pose,1);
     for(auto& ray : adjustedrays){
