@@ -119,8 +119,8 @@ void expand_node(const DistanceNode& node, ObstacleDistanceGrid& grid, std::prio
             if (grid(adjacentCell.x, adjacentCell.y) < 0)
             {
                 float distance = node.distance;
-                if (n < 4) distance += 1.0;
-                else distance += 1.414;
+                if (n < 4) distance += 1.0f;
+                else distance += 1.414213562f;
                 DistanceNode adjacentNode(adjacentCell, distance);
                 grid(adjacentCell.x, adjacentCell.y) = adjacentNode.distance * grid.metersPerCell();
                 search_queue.push(adjacentNode);

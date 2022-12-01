@@ -2,7 +2,7 @@
 #include <planning/astar.hpp>
 #include <algorithm>
 #include <chrono>
-
+const double SQ_2 = 1.414213562373095;
 using namespace std::chrono;
 
 mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
@@ -38,7 +38,8 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         auto cur_node = open_set.pop();
         // printf("Open set size: %d\n", open_set.Q.size());
         // printf("Get cur node (%d, %d)\n", cur_node->cell.x, cur_node->cell.y);
-        if (*cur_node == goal_node){
+        // if (*cur_node == goal_node){
+        if ((*cur_node).cell == goal_node.cell){
             std::vector<Node*> temp_path = extract_node_path(cur_node, &start_node);
             path.path = extract_pose_path(temp_path, distances);
             path_found = true;
@@ -71,6 +72,12 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         closed_set.push_back(cur_node);
     }
 
+    // printf("Closed set size: %d\n", closed_set.size());
+    // for (int i=closed_set.size()-1; i>0; i--)
+    // {
+    //     delete closed_set[i];
+    // }
+
     if (!path_found){
         path.path.clear();
         path.path.push_back(start);
@@ -79,9 +86,32 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         return path;
     }
 
-    path.path_length = path.path.size();
-    path.utime = utime_now();
-    return path;
+    mbot_lcm_msgs::robot_path_t pathFiltered;
+    pathFiltered.path.push_back(path.path[0]);
+    pathFiltered.path.push_back(path.path[1]);
+    float currXDir = path.path[2].x - path.path[1].x;
+    int currXDirSign = int(currXDir > 0) - int(currXDir < 0);
+    float currYDir = path.path[2].y - path.path[1].y;
+    int currYDirSign = int(currYDir > 0) - int(currYDir < 0);
+    float nextXDir;
+    int nextXDirSign;
+    float nextYDir;
+    int nextYDirSign;
+    for (int i = 2; i < path.path.size() - 1; i++) {
+        nextXDir = path.path[i+1].x - path.path[i].x;
+        nextXDirSign = int(nextXDir > 0) - int(nextXDir < 0);
+        nextYDir = path.path[i+1].y - path.path[i].y;
+        nextYDirSign = int(nextYDir > 0) - int(nextYDir < 0);
+        if (not ((nextXDirSign == currXDirSign) and (nextYDirSign == currYDirSign))) {
+            pathFiltered.path.push_back(path.path[i]);
+            currXDirSign = nextXDirSign;
+            currYDirSign = nextYDirSign;
+        }
+    }
+    pathFiltered.path.push_back(path.path[path.path.size() - 1]);
+    pathFiltered.path_length = pathFiltered.path.size();
+    pathFiltered.utime = utime_now();
+    return pathFiltered;
 }
 
 
@@ -93,7 +123,7 @@ double h_cost(Node* from, Node* goal, const ObstacleDistanceGrid& distances)
     int dx = abs(from->cell.x - goal->cell.x);
     int dy = abs(from->cell.y - goal->cell.y);
     
-    h_cost = (dx + dy) + (1.414 - 2) * std::min(dx, dy);
+    h_cost = (dx + dy) + (SQ_2 - 2) * std::min(dx, dy);
     return h_cost;
 }
 double g_cost(Node* from, Node* goal, const ObstacleDistanceGrid& distances, const SearchParams& params)
@@ -103,7 +133,7 @@ double g_cost(Node* from, Node* goal, const ObstacleDistanceGrid& distances, con
     int dx = abs(from->cell.x - goal->cell.x);
     int dy = abs(from->cell.y - goal->cell.y);
     if (dx + dy > 1){
-        g_cost = 1.414;
+        g_cost = SQ_2;
     } else{
         g_cost = 1;
     }
@@ -121,6 +151,8 @@ std::vector<Node*> expand_node(Node* node, const ObstacleDistanceGrid& distances
     for (int n = 0; n < 8; ++n)
     {
         Node *adjacent_node = new Node(node->cell.x + x_deltas[n], node->cell.y + y_deltas[n]);
+        adjacent_node->xSign = x_deltas[n];
+        adjacent_node->ySign = y_deltas[n];
         if (distances.isCellInGrid(adjacent_node->cell.x, adjacent_node->cell.y))
         {
             // children.push_back(adjacent_node);
