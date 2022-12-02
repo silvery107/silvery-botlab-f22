@@ -73,10 +73,10 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
     }
 
     // printf("Closed set size: %d\n", closed_set.size());
-    // for (int i=closed_set.size()-1; i>0; i--)
-    // {
-    //     delete closed_set[i];
-    // }
+    for (int i=closed_set.size()-1; i>0; i--)
+    {
+        delete closed_set[i];
+    }
 
     if (!path_found){
         path.path.clear();
@@ -109,6 +109,8 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         }
     }
     pathFiltered.path.push_back(path.path[path.path.size() - 1]);
+    pathFiltered.path.front().theta = start.theta;
+    pathFiltered.path.back().theta = goal.theta;
     pathFiltered.path_length = pathFiltered.path.size();
     pathFiltered.utime = utime_now();
     return pathFiltered;
