@@ -263,8 +263,11 @@ int8_t Exploration::executeExploringMap(bool initialize)
     *           explored more of the map.
     *       -- You will likely be able to see the frontier before actually reaching the end of the path leading to it.
     */
-    frontier_processing_t front_processing = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
     frontiers_ = find_map_frontiers(currentMap_, currentPose_);
+    frontier_processing_t front_processing = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
+    if (!frontiers_.empty()) {
+        currentPath_ = front_processing.path_selected;
+    }
     
     /////////////////////////////// End student code ///////////////////////////////
     

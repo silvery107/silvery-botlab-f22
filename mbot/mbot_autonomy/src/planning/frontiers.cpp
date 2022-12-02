@@ -124,11 +124,48 @@ frontier_processing_t plan_path_to_frontier(const std::vector<frontier_t>& front
     // Initial alg: find the nearest one
 
     // Returnable path
-    mbot_lcm_msgs::robot_path_t path;
-    path.utime = utime_now();
-    path.path_length = 1;
-    path.path.push_back(robotPose);
     int unreachable_frontiers = 0;
+    ObstacleDistanceGrid distances = planner.obstacleDistances();
+    Point<int> start_cell = global_position_to_grid_cell(Point<double>(robotPose.x, robotPose.y), distances);
+    float mindistance = 10000000.;
+    float distance;
+    Point<float> chosencell;
+    for (auto &frontier : frontiers){
+        int i = 0;
+        for (auto &fcell : frontier.cells){
+            if (planner.isValidGoal(fcell)){
+                i+=1;
+                distance = (fcell.x - start_cell.x)*(fcell.x - start_cell.x)+(fcell.y - start_cell.y)*(fcell.y - start_cell.y);
+                if (distance < mindistance){
+                    chosencell = fcell;
+                    mindistance = distance;
+                } 
+            }
+            
+        }
+        if (i == 0){
+            unreachable_frontiers+=1;
+        }
+    }
+    
+    
+    mbot_lcm_msgs::robot_path_t path;
+
+    if (mindistance == 10000000.){
+        path.utime = utime_now();
+        path.path_length = 1;
+        path.path.push_back(robotPose);
+        // int unreachable_frontiers = 0;
+    }
+    else{
+        mbot_lcm_msgs::pose_xyt_t goal;
+        goal.x = chosencell.x;
+        goal.y = chosencell.y;
+        goal.theta = 0.;
+        goal.utime = robotPose.utime; 
+        path = planner.planPath(robotPose, goal);
+    }
+    
 
     
     return frontier_processing_t(path, unreachable_frontiers);
