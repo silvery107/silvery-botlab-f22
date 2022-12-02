@@ -117,15 +117,20 @@ std::vector<Node*> expand_node(Node* node, const ObstacleDistanceGrid& distances
     // Expand to 8 ways
     const int x_deltas[8] = {1, -1, 0, 0, 1, -1, 1, -1};
     const int y_deltas[8] = {0, 0, 1, -1, 1, -1, -1, 1};
+    int adjacent_cell_x;
+    int adjacent_cell_y;
 
     for (int n = 0; n < 8; ++n)
     {
-        Node *adjacent_node = new Node(node->cell.x + x_deltas[n], node->cell.y + y_deltas[n]);
-        if (distances.isCellInGrid(adjacent_node->cell.x, adjacent_node->cell.y))
+        adjacent_cell_x = node->cell.x + x_deltas[n];
+        adjacent_cell_y = node->cell.y + y_deltas[n];
+
+        if (distances.isCellInGrid(adjacent_cell_x, adjacent_cell_y))
         {
-            // children.push_back(adjacent_node);
-            float cell_distance = distances(adjacent_node->cell.x, adjacent_node->cell.y);
-            if (cell_distance>params.minDistanceToObstacle){//} && cell_distance<params.maxDistanceWithCost){
+            float cell_distance = distances(adjacent_cell_x, adjacent_cell_y);
+            if (cell_distance > params.minDistanceToObstacle) // && cell_distance<params.maxDistanceWithCost)
+            {
+                Node *adjacent_node = new Node(adjacent_cell_x, adjacent_cell_y);
                 children.push_back(adjacent_node);
             }
         }
