@@ -109,8 +109,9 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         }
     }
     pathFiltered.path.push_back(path.path[path.path.size() - 1]);
-    pathFiltered.path.front().theta = start.theta;
-    pathFiltered.path.back().theta = goal.theta;
+    float theta_x = pathFiltered.path.back().x - pathFiltered.path[pathFiltered.path.size() -2].x;
+    float theta_y = pathFiltered.path.back().y - pathFiltered.path[pathFiltered.path.size() -2].y;
+    pathFiltered.path.back().theta = std::atan2(theta_y, theta_x);
     pathFiltered.path_length = pathFiltered.path.size();
     pathFiltered.utime = utime_now();
     return pathFiltered;
