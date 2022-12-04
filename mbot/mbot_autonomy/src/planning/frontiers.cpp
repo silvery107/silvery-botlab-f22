@@ -130,24 +130,33 @@ frontier_processing_t plan_path_to_frontier(const std::vector<frontier_t>& front
     float mindistance = 10000000.;
     float distance;
     Point<float> chosencell;
+    Point<float> fcell;
     for (auto &frontier : frontiers){
         int i = 0;
-        for (auto &fcell : frontier.cells){
-            if (planner.isValidGoal(fcell)){
-                i+=1;
-                distance = (fcell.x - start_cell.x)*(fcell.x - start_cell.x)+(fcell.y - start_cell.y)*(fcell.y - start_cell.y);
-                if (distance < mindistance){
-                    chosencell = fcell;
-                    mindistance = distance;
-                } 
-            }
-            
+        fcell = find_frontier_centroid(frontier);
+        if (planner.isValidGoal(chosencell)) {
+            i += 1;
+            distance = (fcell.x - start_cell.x)*(fcell.x - start_cell.x)+(fcell.y - start_cell.y)*(fcell.y - start_cell.y);
+            if (distance < mindistance){
+                chosencell = fcell;
+                mindistance = distance;
+            } 
         }
+        // for (auto &fcell : frontier.cells){
+        //     if (planner.isValidGoal(fcell)){
+        //         i+=1;
+        //         distance = (fcell.x - start_cell.x)*(fcell.x - start_cell.x)+(fcell.y - start_cell.y)*(fcell.y - start_cell.y);
+        //         if (distance < mindistance){
+        //             chosencell = fcell;
+        //             mindistance = distance;
+        //         } 
+        //     }
+            
+        // }
         if (i == 0){
             unreachable_frontiers+=1;
         }
     }
-    
     
     mbot_lcm_msgs::robot_path_t path;
 
