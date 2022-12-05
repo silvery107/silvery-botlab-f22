@@ -64,12 +64,13 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
                     node->parent = cur_node;
                     node->g_cost = temp_g_cost;
                     node->h_cost = h_cost(node, &goal_node, distances);
-                    if (!is_in_list(node, closed_set))
+                    if (!is_in_list(node, closed_set)) {
                         open_set.push(node);
-                    else
-                        delete node;
+                        continue;
+                    }
                 }
             }
+            delete node;
         }
         closed_set.push_back(cur_node);
     }
@@ -86,7 +87,6 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         path.path_length = path.path.size();
         path.utime = utime_now();
         printf("Astar failed, no path found!!!!!!!\n");
-        printf("Path contain: (%.3f, %.3f, %.3f)\n", path.path[0].x, path.path[0].y, path.path[0].theta);
         return path;
     }
 
