@@ -149,7 +149,7 @@ class SmartManeuverController : public ManeuverControllerBase
 private:
     float pid[3] = {1.5, 8.7, 0.0}; //kp, ka, kb
     float d_end_crit = 0.02;
-    float d_end_midsteps = 0.15;
+    float d_end_midsteps = 0.1;
     float angle_end_crit = 0.2;
 public:
     SmartManeuverController() = default;   
