@@ -130,7 +130,7 @@ public:
         float dy = target.y - pose.y;
         float target_heading = atan2(dy, dx);
         // Handle the case when the target is on the same x,y but on a different theta
-        return (fabs(angle_diff(pose.theta, target_heading)) < 0.01);
+        return (fabs(angle_diff(pose.theta, target_heading)) < 0.1);
     }
     bool target_reached_final_turn(const mbot_lcm_msgs::pose_xyt_t& pose, const mbot_lcm_msgs::pose_xyt_t& target)
     {
@@ -149,7 +149,7 @@ class SmartManeuverController : public ManeuverControllerBase
 private:
     float pid[3] = {1.5, 8.7, 0.0}; //kp, ka, kb
     float d_end_crit = 0.02;
-    float d_end_midsteps = 0.02;
+    float d_end_midsteps = 0.15;
     float angle_end_crit = 0.2;
 public:
     SmartManeuverController() = default;   
@@ -162,19 +162,20 @@ public:
         float alpha = angle_diff(atan2(dy,dx), pose.theta);
         // printf("alpha: %f\n", alpha);
 
-        // // To avoid weird behaviour at alpha=pi/2, because it is a common case
-        // float margin = 2 * M_PI / 180;
-        // if (fabs(alpha) > M_PI_2 + margin)
-        // {
-        //     alpha = wrap_to_pi(alpha - M_PI);
-        //     vel_sign = -1;
-        // }
+        // To avoid weird behaviour at alpha=pi/2, because it is a common case
+        float margin = 2 * M_PI / 180;
+        if (fabs(alpha) > M_PI_2 + margin)
+        {
+            alpha = wrap_to_pi(alpha - M_PI);
+            vel_sign = -1;
+        }
         float beta = wrap_to_pi(target.theta -(alpha + pose.theta));
         float fwd_vel = vel_sign *  pid[0] * d_fwd;
         float turn_vel = pid[1] * alpha + pid[2] * beta;
 
         // If alpha is more than 45 degrees, turn in place and then go
         if (fabs(alpha) > M_PI_4/4.f)
+        // if (fabs(alpha) > M_PI_4)
         {
             fwd_vel = 0;
         }
@@ -314,6 +315,12 @@ public:
         last_cmd.utime = cmd.utime;
         last_cmd.trans_v = cmd.trans_v;
         last_cmd.angular_v = cmd.angular_v;
+        // if(!targets_.empty() && !odomTrace_.empty()) 
+        // {
+        //     if (state_ != FINAL_TURN) {
+        //         cmd.trans_v = std::max(cmd.trans_v, 0.08f);
+        //     }
+        // }
         return cmd; 
     }
 
@@ -447,17 +454,17 @@ int main(int argc, char** argv)
             mbot_lcm_msgs::mbot_motor_command_t cmd = controller.updateCommand();
             // Limit command values
             // Fwd vel
-            float max_trans_vel = 0.3;
+            float max_trans_vel = 0.15;
             if (cmd.trans_v > max_trans_vel) cmd.trans_v = max_trans_vel;
             else if (cmd.trans_v < -max_trans_vel) cmd.trans_v = -max_trans_vel;
 
             // Angular vel
-            float max_ang_vel = M_PI/2.f;
+            float max_ang_vel = M_PI/5.f;
             if (cmd.angular_v > max_ang_vel) cmd.angular_v = max_ang_vel;
             else if (cmd.angular_v < -max_ang_vel) cmd.angular_v = -max_ang_vel;
 
             // printf("%f\t%f\n", cmd.trans_v, cmd.angular_v);
-            
+
             lcmInstance.publish(MBOT_MOTOR_COMMAND_CHANNEL, &cmd);
     	}
     }

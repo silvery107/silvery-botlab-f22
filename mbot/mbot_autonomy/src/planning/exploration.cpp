@@ -213,7 +213,7 @@ void Exploration::executeStateMachine(void)
     if(!are_equal(previousPath.path, currentPath_.path))
     { 
 
-        // std::cout << "INFO: Exploration: A new path was created on this iteration. Sending to Mbot:\n";
+        std::cout << "INFO: Exploration: A new path was created on this iteration. Sending to Mbot:\n";
 
         // std::cout << "path timestamp: " << currentPath_.utime << "\npath: ";
 
@@ -235,6 +235,10 @@ int8_t Exploration::executeInitializing(void)
 {
     /////////////////////////   Create the status message    //////////////////////////
     // Immediately transition to exploring once the first bit of data has arrived
+    currentPath_.path.push_back(homePose_);
+    currentPath_.path_length = 1;
+    currentPath_.utime = utime_now();
+    
     mbot_lcm_msgs::exploration_status_t status;
     status.utime = utime_now();
     status.team_number = teamNumber_;
@@ -266,7 +270,9 @@ int8_t Exploration::executeExploringMap(bool initialize)
     frontiers_ = find_map_frontiers(currentMap_, currentPose_);
     frontier_processing_t front_processing = plan_path_to_frontier(frontiers_, currentPose_, currentMap_, planner_);
     if (frontiers_.size() - front_processing.num_unreachable_frontiers > 0) {
-        currentPath_ = front_processing.path_selected;
+        if (front_processing.path_selected.path_length > 1) {
+            currentPath_ = front_processing.path_selected;
+        }
     }
     
     /////////////////////////////// End student code ///////////////////////////////
@@ -330,7 +336,10 @@ int8_t Exploration::executeReturningHome(bool initialize)
     */
     
     printf("Returning home\n");
-    currentPath_ = planner_.planPath(currentPose_, homePose_);
+    mbot_lcm_msgs::robot_path_t temp_path = planner_.planPath(currentPose_, homePose_);
+    if (temp_path.path_length > 1) {
+        currentPath_ = temp_path;
+    }
     /////////////////////////////// End student code ///////////////////////////////
     
     /////////////////////////   Create the status message    //////////////////////////

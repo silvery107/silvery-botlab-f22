@@ -26,6 +26,8 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         path.path.push_back(start);
         path.path_length = path.path.size();
         path.utime = utime_now();
+        printf("Astar start_node==goal_node!!!!!!!\n");
+        printf("Path contain: (%.3f, %.3f, %.3f)\n", path.path[0].x, path.path[0].y, path.path[0].theta);
         return path;
     }
 
@@ -83,15 +85,19 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         path.path.push_back(start);
         path.path_length = path.path.size();
         path.utime = utime_now();
+        printf("Astar failed, no path found!!!!!!!\n");
+        printf("Path contain: (%.3f, %.3f, %.3f)\n", path.path[0].x, path.path[0].y, path.path[0].theta);
         return path;
     }
 
     mbot_lcm_msgs::robot_path_t pathFiltered;
     pathFiltered.path.push_back(path.path[0]);
-    pathFiltered.path.push_back(path.path[1]);
-    float currXDir = path.path[2].x - path.path[1].x;
+    // pathFiltered.path.push_back(path.path[1]);
+    // float currXDir = path.path[2].x - path.path[1].x;
+    float currXDir = path.path[1].x - path.path[0].x;
     int currXDirSign = int(currXDir > 0) - int(currXDir < 0);
-    float currYDir = path.path[2].y - path.path[1].y;
+    // float currYDir = path.path[2].y - path.path[1].y;
+    float currYDir = path.path[1].y - path.path[0].y;
     int currYDirSign = int(currYDir > 0) - int(currYDir < 0);
     float nextXDir;
     int nextXDirSign;
@@ -133,12 +139,16 @@ double g_cost(Node* from, Node* goal, const ObstacleDistanceGrid& distances, con
 {
     // TODO: Return calculated g cost
     double g_cost = 0;
+    double cellDistance = distances(goal->cell.x, goal->cell.y);
+    if (cellDistance > params.minDistanceToObstacle && cellDistance < params.maxDistanceWithCost) {
+        g_cost = pow(params.maxDistanceWithCost - cellDistance, params.distanceCostExponent);
+    }
     int dx = abs(from->cell.x - goal->cell.x);
     int dy = abs(from->cell.y - goal->cell.y);
     if (dx + dy > 1){
-        g_cost = SQ_2;
+        g_cost += SQ_2;
     } else{
-        g_cost = 1;
+        g_cost += 1;
     }
     return g_cost;
 }

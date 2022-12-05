@@ -150,12 +150,12 @@ public:
     * \return   ObstacleDistanceGrid currently being used by the motion planner.
     */
     ObstacleDistanceGrid obstacleDistances(void) const { return distances_; }
+    SearchParams searchParams_;
 
 private:
     
     ObstacleDistanceGrid distances_;
     MotionPlannerParams params_;
-    SearchParams searchParams_;
 
     size_t num_frontiers;
     mbot_lcm_msgs::pose_xyt_t prev_goal;

@@ -22,7 +22,13 @@ mbot_lcm_msgs::pose_xyt_t nearest_navigable_cell(mbot_lcm_msgs::pose_xyt_t pose,
 mbot_lcm_msgs::pose_xyt_t search_to_nearest_free_space(Point<float> position,
                                                         const OccupancyGrid& map,
                                                         const MotionPlanner& planner);
-double path_length(const mbot_lcm_msgs::robot_path_t& path);
+double path_length(const mbot_lcm_msgs::robot_path_t& path){
+    double pathlength = 0.;
+    for (int i = 0; i < path.path_length-1; i+=1){
+        pathlength += (path.path[i].x - path.path[i+1].x) * (path.path[i].x - path.path[i+1].x) + (path.path[i].y - path.path[i+1].y) * (path.path[i].y - path.path[i+1].y);
+    }
+    return pathlength;
+};
 
 
 std::vector<frontier_t> find_map_frontiers(const OccupancyGrid& map, 
@@ -125,55 +131,48 @@ frontier_processing_t plan_path_to_frontier(const std::vector<frontier_t>& front
 
     // Returnable path
     int unreachable_frontiers = 0;
+    mbot_lcm_msgs::robot_path_t path;
     ObstacleDistanceGrid distances = planner.obstacleDistances();
     Point<int> start_cell = global_position_to_grid_cell(Point<double>(robotPose.x, robotPose.y), distances);
-    float mindistance = 10000000.;
+    float mindistance = std::numeric_limits<float>::max();
     float distance;
     Point<float> chosencell;
     Point<float> fcell;
+    mbot_lcm_msgs::pose_xyt_t fpose_reachable;
+    mbot_lcm_msgs::robot_path_t temp_path;
     for (auto &frontier : frontiers){
         int i = 0;
         fcell = find_frontier_centroid(frontier);
-        if (planner.isValidGoal(chosencell)) {
-            i += 1;
-            distance = (fcell.x - start_cell.x)*(fcell.x - start_cell.x)+(fcell.y - start_cell.y)*(fcell.y - start_cell.y);
-            if (distance < mindistance){
-                chosencell = fcell;
-                mindistance = distance;
-            } 
-        }
-        // for (auto &fcell : frontier.cells){
-        //     if (planner.isValidGoal(fcell)){
-        //         i+=1;
-        //         distance = (fcell.x - start_cell.x)*(fcell.x - start_cell.x)+(fcell.y - start_cell.y)*(fcell.y - start_cell.y);
-        //         if (distance < mindistance){
-        //             chosencell = fcell;
-        //             mindistance = distance;
-        //         } 
-        //     }
-            
-        // }
+        fpose_reachable = search_to_nearest_free_space(fcell, map, planner);
+        temp_path = planner.planPath(robotPose, fpose_reachable);
+        i += 1;
+        distance = path_length(temp_path);
+        if (distance < mindistance){
+            path = temp_path;
+            mindistance = distance;
+        } 
+
         if (i == 0){
             unreachable_frontiers+=1;
         }
     }
     
-    mbot_lcm_msgs::robot_path_t path;
+    // chosencell = search_to_nearest_free_space(chosencell, map, planner);
 
-    if (mindistance == 10000000.){
-        path.utime = utime_now();
-        path.path_length = 1;
-        path.path.push_back(robotPose);
-        // int unreachable_frontiers = 0;
-    }
-    else{
-        mbot_lcm_msgs::pose_xyt_t goal;
-        goal.x = chosencell.x;
-        goal.y = chosencell.y;
-        goal.theta = 0.;
-        goal.utime = robotPose.utime; 
-        path = planner.planPath(robotPose, goal);
-    }
+    // if (mindistance == std::numeric_limits<float>::max()){
+    //     path.utime = utime_now();
+    //     path.path_length = 1;
+    //     path.path.push_back(robotPose);
+    //     // int unreachable_frontiers = 0;
+    // }
+    // else{
+    //     mbot_lcm_msgs::pose_xyt_t goal;
+    //     goal.x = chosencell.x;
+    //     goal.y = chosencell.y;
+    //     goal.theta = 0.f;
+    //     goal.utime = utime_now();
+    //     path = planner.planPath(robotPose, goal);
+    // }
     
 
     
@@ -255,7 +254,56 @@ Point<double> find_frontier_centroid(const frontier_t& frontier)
     int index = (int)(frontier.cells.size() / 2.0);
     // printf("index: %d, size: %d\n", index, frontier.cells.size());
     mid_point = frontier.cells[index];
-    printf("Mid point of frontier: (%f,%f)\n", mid_point.x, mid_point.y);
+    // printf("Mid point of frontier: (%f,%f)\n", mid_point.x, mid_point.y);
 
     return mid_point;
+}
+
+mbot_lcm_msgs::pose_xyt_t search_to_nearest_free_space(Point<float> position, const OccupancyGrid& map, const MotionPlanner& planner) {
+    
+    mbot_lcm_msgs::pose_xyt_t pose_to_return = {0};
+    if (planner.isValidGoal(position)) {
+        pose_to_return.x = position.x;
+        pose_to_return.y = position.y;
+        return pose_to_return;
+    }
+    std::queue<Point<int>> cellQueue;
+    std::set<Point<int>> visitedFrontiers;
+    ObstacleDistanceGrid distances = planner.obstacleDistances();
+    Point<int> startCell = global_position_to_grid_cell(position, map);
+    cellQueue.push(startCell);
+    visitedFrontiers.insert(startCell);
+    
+    // Use an 8-way connected search for growing a frontier
+    const int kNumNeighbors = 8;
+    const int xDeltas[] = { -1, -1, -1, 1, 1, 1, 0, 0 };
+    const int yDeltas[] = {  0,  1, -1, 0, 1,-1, 1,-1 };
+ 
+
+    // Do a simple BFS to find all connected frontier cells to the starting cell
+    while(!cellQueue.empty())
+    {
+        Point<int> nextCell = cellQueue.front();
+        cellQueue.pop();
+
+        // Check each neighbor to see if it is also a frontier
+        for(int n = 0; n < kNumNeighbors; ++n)
+        {
+            Point<int> neighbor(nextCell.x + xDeltas[n], nextCell.y + yDeltas[n]);
+            if((visitedFrontiers.find(neighbor) == visitedFrontiers.end()))
+            {
+                visitedFrontiers.insert(neighbor);
+                cellQueue.push(neighbor);
+                if (planner.isValidGoal(neighbor)) {
+                // if (distances(neighbor.x, neighbor.y) > planner.searchParams_.minDistanceToObstacle) {
+                    Point<float> temp_point = grid_position_to_global_position(neighbor, map);
+                    pose_to_return.x = temp_point.x;
+                    pose_to_return.y = temp_point.y;
+                    return pose_to_return;
+                }
+            }
+        }
+    }
+    printf("Expend frontier centroid failed!!!!!!!\n");
+    // TODO return something?
 }
