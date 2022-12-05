@@ -265,7 +265,9 @@ mbot_lcm_msgs::pose_xyt_t search_to_nearest_free_space(Point<float> position, co
     if (planner.isValidGoal(position)) {
         pose_to_return.x = position.x;
         pose_to_return.y = position.y;
-        return pose_to_return;
+        if (planner.isValidGoal(pose_to_return)) {
+            return pose_to_return;
+        }
     }
     std::queue<Point<int>> cellQueue;
     std::set<Point<int>> visitedFrontiers;
@@ -299,7 +301,9 @@ mbot_lcm_msgs::pose_xyt_t search_to_nearest_free_space(Point<float> position, co
                     Point<float> temp_point = grid_position_to_global_position(neighbor, map);
                     pose_to_return.x = temp_point.x;
                     pose_to_return.y = temp_point.y;
-                    return pose_to_return;
+                    if (planner.isValidGoal(pose_to_return)) {
+                        return pose_to_return;
+                    }
                 }
             }
         }
