@@ -26,9 +26,9 @@ using pose_vec_t = std::vector<pose_t>;
 bool are_equal(const pose_vec_t& lhs, const pose_vec_t& rhs)
 {
     if(lhs.size() != rhs.size()) return false;
-    for (const auto& l: lhs)
-        for (const auto& r: rhs)
-            if (!are_equal(l, r)) return false;
+    for (int i=0; i<lhs.size(); i++) {
+        if (!are_equal(lhs[i], rhs[i])) return false;
+    }
     return true;
 }
 
