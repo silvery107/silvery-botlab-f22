@@ -36,9 +36,9 @@ void MotionPlannerServer::handleRequest(const lcm::ReceiveBuffer* rbuf, const st
 
     mbot_lcm_msgs::pose_xyt_t goal;
     goal.theta = request->goal.theta;
-    auto goalCoord = grid_position_to_global_position(Point<double>(request->goal.y, request->goal.x), latest_map_);
-    goal.x = goalCoord.x;
-    goal.y = goalCoord.y;
+    // auto goalCoord = grid_position_to_global_position(Point<double>(request->goal.y, request->goal.x), latest_map_);
+    // goal.x = goalCoord.x;
+    // goal.y = goalCoord.y;
     
     mbot_lcm_msgs::robot_path_t path;
     if(request->require_plan){

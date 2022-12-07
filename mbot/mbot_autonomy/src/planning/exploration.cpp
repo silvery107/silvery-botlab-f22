@@ -150,8 +150,8 @@ void Exploration::copyDataForUpdate(void)
     {
         homePose_ = incomingPose_;
         haveHomePose_ = true;
-        // std::cout << "INFO: Exploration: Set home pose:" << homePose_.x << ',' << homePose_.y << ',' 
-        //     << homePose_.theta << '\n';
+        std::cout << "INFO: Exploration: Set home pose:" << homePose_.x << ',' << homePose_.y << ',' 
+            << homePose_.theta << '\n';
     }
 }
 
@@ -283,7 +283,7 @@ int8_t Exploration::executeExploringMap(bool initialize)
     status.team_number = teamNumber_;
     status.state = mbot_lcm_msgs::exploration_status_t::STATE_EXPLORING_MAP;
     
-    printf("Num unreachable frontiers: %d\n", front_processing.num_unreachable_frontiers);
+    // printf("Num unreachable frontiers: %d\n", front_processing.num_unreachable_frontiers);
     // If no reachable frontiers remain, then exploration is complete
     if(frontiers_.size() - front_processing.num_unreachable_frontiers == 0)
     {

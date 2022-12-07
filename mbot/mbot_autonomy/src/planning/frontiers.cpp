@@ -302,6 +302,7 @@ mbot_lcm_msgs::pose_xyt_t search_to_nearest_free_space(Point<float> position, co
                     pose_to_return.x = temp_point.x;
                     pose_to_return.y = temp_point.y;
                     if (planner.isValidGoal(pose_to_return)) {
+                        printf("BFS return with reachable queue size: %d\n", cellQueue.size());
                         return pose_to_return;
                     }
                 }

@@ -136,5 +136,5 @@ bool is_cell_free(cell_t cell, const OccupancyGrid& map)
 
 bool is_cell_occupied(cell_t cell, const OccupancyGrid& map)
 {
-    return map.logOdds(cell.x, cell.y) > 0;
+    return map.logOdds(cell.x, cell.y) >= 0;
 }

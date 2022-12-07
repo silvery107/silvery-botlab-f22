@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 const double SQ_2 = 1.414213562373095;
+static double minDistanceToObstacleOffset = 0.0;
 using namespace std::chrono;
 
 mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
@@ -36,7 +37,9 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
     PriorityQueue open_set;
     std::vector<Node*> closed_set;
     open_set.push(&start_node);
-    while (!open_set.empty() || open_set.Q.size()>10000){
+    long iter = 0;
+    minDistanceToObstacleOffset = 0.0;
+    while (!open_set.empty()){
         auto cur_node = open_set.pop();
         // printf("Open set size: %d\n", open_set.Q.size());
         // printf("Get cur node (%d, %d)\n", cur_node->cell.x, cur_node->cell.y);
@@ -73,6 +76,36 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
             delete node;
         }
         closed_set.push_back(cur_node);
+        iter += 1;
+        if (iter % 1000 == 1) {
+            printf("Cur iter: %d\n", iter);
+        }
+        if (iter > 8000 || open_set.empty()) {
+            iter = 0;
+            if (minDistanceToObstacleOffset < std::min(params.minDistanceToObstacle, 0.1)) {
+                minDistanceToObstacleOffset += 0.01;
+                printf("Current minDistanceToObstacleOffset: %.3f\n", minDistanceToObstacleOffset);
+            } else {
+                printf("minDistanceToObstacleOffset < params.minDistanceToObstacle\n");
+                printf("minDistanceToObstacleOffset : %.3f\n", minDistanceToObstacleOffset);
+                printf("params.minDistanceToObstacle : %.3f\n", params.minDistanceToObstacle);
+                minDistanceToObstacleOffset = 0.0;
+                break;
+            }
+            for (int i=closed_set.size()-1; i>0; i--)
+            {
+                delete closed_set[i];
+            }
+            closed_set.clear();
+            for (int i=open_set.Q.size()-1; i>=0; i--)
+            {
+                delete open_set.pop();
+            }
+            if (open_set.Q.size()!=0) {
+                printf("Error operation in clear openset!!!!!!\n");
+            }
+            open_set.push(&start_node);
+        }
     }
 
     // printf("Closed set size: %d\n", closed_set.size());
@@ -140,7 +173,7 @@ double g_cost(Node* from, Node* goal, const ObstacleDistanceGrid& distances, con
     // TODO: Return calculated g cost
     double g_cost = 0;
     double cellDistance = distances(goal->cell.x, goal->cell.y);
-    if (cellDistance > params.minDistanceToObstacle && cellDistance < params.maxDistanceWithCost) {
+    if (cellDistance > params.minDistanceToObstacle - minDistanceToObstacleOffset && cellDistance < params.maxDistanceWithCost) {
         g_cost = pow(params.maxDistanceWithCost - cellDistance, params.distanceCostExponent);
     }
     int dx = abs(from->cell.x - goal->cell.x);
@@ -171,7 +204,7 @@ std::vector<Node*> expand_node(Node* node, const ObstacleDistanceGrid& distances
         if (distances.isCellInGrid(adjacent_cell_x, adjacent_cell_y))
         {
             float cell_distance = distances(adjacent_cell_x, adjacent_cell_y);
-            if (cell_distance > params.minDistanceToObstacle) // && cell_distance<params.maxDistanceWithCost)
+            if (cell_distance > params.minDistanceToObstacle - minDistanceToObstacleOffset) // && cell_distance<params.maxDistanceWithCost)
             {
                 Node *adjacent_node = new Node(adjacent_cell_x, adjacent_cell_y);
                 children.push_back(adjacent_node);
