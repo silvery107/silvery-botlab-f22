@@ -28,6 +28,17 @@ target_include_directories(motion_controller PRIVATE
   include
 )
 
+add_executable(mctrl_loc src/mbot/motion_controller.cpp)
+
+target_link_libraries(mctrl_loc
+  common_utils
+  lcm
+  mbot_lcm_msgs-cpp
+)
+target_include_directories(mctrl_loc PRIVATE
+  include
+)
+
 # DRIVE SQUARE
 add_executable(drive_square src/mbot/drive_square.cpp)
 
@@ -61,6 +72,26 @@ target_include_directories(slam PRIVATE
   include
 )
 
+add_executable(slam_loc src/slam/slam_main.cpp
+  src/slam/action_model.cpp
+  src/slam/mapping.cpp
+  src/slam/moving_laser_scan.cpp
+  src/slam/occupancy_grid.cpp
+  src/slam/particle_filter.cpp
+  src/slam/sensor_model.cpp
+  src/slam/slam.cpp
+  # src/utils/pose_trace.cpp
+)
+target_link_libraries(slam_loc
+  ${CMAKE_THREAD_LIBS_INIT}
+  common_utils
+  lcm
+  mbot_lcm_msgs-cpp
+)
+target_include_directories(slam_loc PRIVATE
+  include
+)
+
 # EXPLORATION
 add_executable(exploration src/planning/exploration_main.cpp
   src/planning/exploration.cpp
@@ -77,6 +108,24 @@ target_link_libraries(exploration
   ${CMAKE_THREAD_LIBS_INIT}
 )
 target_include_directories(exploration PRIVATE
+  include
+)
+
+add_executable(exp_loc src/planning/exploration_main.cpp
+  src/planning/exploration.cpp
+  src/planning/motion_planner.cpp 
+  src/planning/frontiers.cpp 
+  src/slam/occupancy_grid.cpp 
+  src/planning/obstacle_distance_grid.cpp
+  src/planning/astar.cpp 
+)
+target_link_libraries(exp_loc
+  mbot_lcm_msgs-cpp
+  common_utils
+  lcm
+  ${CMAKE_THREAD_LIBS_INIT}
+)
+target_include_directories(exp_loc PRIVATE
   include
 )
 

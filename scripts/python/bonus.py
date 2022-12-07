@@ -143,10 +143,10 @@ class Bonus:
         self.particle_y = np.array(particle_y)
 
     def initialize(self):
-        print("creating LCM...")
+        print("Creating LCM...")
         self.lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
 
-        print("subscribing to LCM channels...")
+        print("Subscribing to LCM channels...")
         self.lc.subscribe("LIDAR", self.lcm_lidar_handler)
         self.lc.subscribe("SLAM_PARTICLES", self.lcm_particle_handler)
         # lc.subscribe("SLAM_POSE", self.lcm_slam_pose_handler)
@@ -168,46 +168,45 @@ class Bonus:
         lc.publish("PATH_REQUEST", path_request.encode())
 
     def runOnce(self):
-        targetDistance = 0.0
-        targetTheta = 0.0
 
-        if self.haveScan:
-            # maxRange = 0
-            rotateSign = 1
-            transSign = 1
+        # if self.haveScan:
+        #     targetDistance = 0.0
+        #     targetTheta = 0.0
+        #     # maxRange = 0
+        #     rotateSign = 1
+        #     transSign = 1
 
-            self.windowProcess(self.scan.ranges)
+        #     self.windowProcess(self.scan.ranges)
 
-            targetTheta = self.scan.thetas[self.windowIndex]
-            if targetTheta > np.pi:
-                targetTheta -= np.pi * 2
-            targetDistance = self.scan.ranges[self.windowIndex] / self.moveSeg
+        #     targetTheta = self.scan.thetas[self.windowIndex]
+        #     if targetTheta > np.pi:
+        #         targetTheta -= np.pi * 2
+        #     targetDistance = self.scan.ranges[self.windowIndex] / self.moveSeg
 
-            print("Window index: %d" % self.windowIndex)
+        #     print("Window index: %d" % self.windowIndex)
 
-            rotateSign = 1 if targetTheta >= 0 else -1
-            transSign = 1 if targetDistance >= 0 else -1
-            print("Send trans: %.3f, rotate: %.3f" % (targetDistance, np.rad2deg(targetTheta)))
+        #     rotateSign = 1 if targetTheta >= 0 else -1
+        #     transSign = 1 if targetDistance >= 0 else -1
+        #     print("Send trans: %.3f, rotate: %.3f" % (targetDistance, np.rad2deg(targetTheta)))
 
-            rotate(rotateSign * self.maxAngVel, abs(targetTheta / self.maxAngVel), end_stop=True)
-            drive_forward(transSign * self.maxTransVel, abs(targetDistance / self.maxTransVel), end_stop=True)
+        #     rotate(rotateSign * self.maxAngVel, abs(targetTheta / self.maxAngVel), end_stop=True)
+        #     drive_forward(transSign * self.maxTransVel, abs(targetDistance / self.maxTransVel), end_stop=True)
 
-            self.haveScan = False
+        #     self.haveScan = False
         
         if self.haveParticle:
             self.particle_adj()
             varx = np.var(self.particle_x)
             vary = np.var(self.particle_y)
-            print(varx + vary)
+            # print(varx + vary)
             if varx + vary < self.maxvariance:
                 self.iter += 1
-                print("Current Iter / Converge Iter: (%d, %d)" % (self.iter, self.maxIter))
+                print("Iter to Converge: (%d, %d)" % (self.iter, self.maxIter))
             else:
                 self.iter = 0
             
             if self.iter == self.maxIter:
-                # os.system("../bin/motion_controller")
-                # subprocess.Popen(["../bin/motion_controller"])
+                print("Send goal to planning server")
                 self.send_goal_to_planner()
 
                 self.taskDone = True
@@ -216,9 +215,18 @@ class Bonus:
 
     def run(self):
         self.initialize()
+        print("Start local motion controller, slam and exploration")
+        os.system("../bin/mctrl_loc --use-local-channels > /dev/null 2>&1 &")
+        os.system("../bin/slam_loc --use-local-channels --num-particles 200 > /dev/null 2>&1 &")
+        os.system("../bin/exp_loc --use-local-channels > /dev/null 2>&1 &")
+        print("Start motion planning server")
+        os.system("../bin/motion_planning_server > /dev/null 2>&1 &")
+
         while not self.taskDone:
             self.runOnce()
             # time.sleep(0.001)
+        
+        os.system("../cleanup_bonus.sh")
 
 
 # Program entry
@@ -226,6 +234,7 @@ if __name__ == "__main__":
     agent = Bonus()
     agent.run()
     # agent.send_goal_to_planner()
+    print("Start motion controller")
     os.system("../bin/motion_controller")
 
     # 1. search longest scan ray
