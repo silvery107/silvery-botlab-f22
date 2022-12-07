@@ -11,21 +11,28 @@ import collections
 
 class Bonus:
     def __init__(self) -> None:
+        # Subscribe data
         self.scan = None
         self.particles = None
         self.slam_pose = None
-        self.iter = 0
+        self.expState = 0
+        # Control params
         self.maxTransVel = 0.15
         self.maxAngVel = np.pi / 5
-        self.maxvariance = 0.01
+        # Lcm handler indicators
         self.haveScan = False
         self.haveParticle = False
         self.haveSlamPose = False
+        self.haveExpState = False
+        # Convergence 
         self.particle_x = None
         self.particle_y = None
+        self.maxvariance = 0.01
+
         self.iter = 0
-        self.maxIter = 10
+        self.maxIter = 50
         self.taskDone = False
+        # Window processing
         self.windowSize = 40
         self.windowIndex = 10
         self.moveSeg = 1.5
@@ -115,23 +122,25 @@ class Bonus:
             print("lcm exit!")
             sys.exit()
 
-    def lcm_particle_handler(self, channel, data):
+    def lcm_particles_handler(self, channel, data):
         if not self.haveParticle:
             self.particles = particles_t.decode((data))
             self.haveParticle = True
-            # print("have particles")
 
     def lcm_lidar_handler(self, channel, data):
         if not self.haveScan:
             self.scan = lidar_t.decode(data)
             self.haveScan = True
-            # print("have scan")
 
-    # def lcm_slam_pose_handler(self, channel, data):
-    #     if not self.haveSlamPose:
-    #         self.slam_pose = pose_xyt_t.decode(data)
-    #         self.haveSlamPose = True
-    #         print("have scan")
+    def lcm_slam_pose_handler(self, channel, data):
+        if not self.haveSlamPose:
+            self.slam_pose = pose_xyt_t.decode(data)
+            self.haveSlamPose = True
+
+    def lcm_exp_status_handlesr(self, channel, data):
+        if not self.haveExpState:
+            self.expState = exploration_status_t.decode(data)
+            self.haveExpState = True
 
     def particle_adj(self):
         particle_x = []
@@ -148,7 +157,8 @@ class Bonus:
 
         print("Subscribing to LCM channels...")
         self.lc.subscribe("LIDAR", self.lcm_lidar_handler)
-        self.lc.subscribe("SLAM_PARTICLES", self.lcm_particle_handler)
+        self.lc.subscribe("SLAM_PARTICLES", self.lcm_particles_handler)
+        self.lc.subscribe("EXPLORATION_STATUS", self.lcm_exp_status_handlesr)
         # lc.subscribe("SLAM_POSE", self.lcm_slam_pose_handler)
         
         lcm_kill_thread = Thread(target = self.handle_lcm, args=[], daemon = True)
@@ -166,6 +176,15 @@ class Bonus:
         path_request.require_plan = 1
         path_request.goal = goal
         lc.publish("PATH_REQUEST", path_request.encode())
+    
+    def start_local_exploration(self):
+        print("Start local motion controller, slam and exploration")
+        os.system("../bin/mctrl_loc --use-local-channels > /dev/null 2>&1 &")
+        os.system("../bin/slam_loc --use-local-channels --num-particles 200 > /dev/null 2>&1 &")
+        os.system("../bin/exp_loc --use-local-channels > /dev/null 2>&1 &")
+    
+    def cleanup_local_exploration(self):
+        os.system("../cleanup_bonus.sh")
 
     def runOnce(self):
 
@@ -212,13 +231,20 @@ class Bonus:
                 self.taskDone = True
 
             self.haveParticle = False
+        
+        if self.haveExpState:
+            if self.expState == 3 or self.expState == 4:
+                self.cleanup_local_exploration()
+                time.sleep(0.01)
+                self.start_local_exploration()
+                
+            self.haveExpState = False
+
 
     def run(self):
         self.initialize()
-        print("Start local motion controller, slam and exploration")
-        os.system("../bin/mctrl_loc --use-local-channels > /dev/null 2>&1 &")
-        os.system("../bin/slam_loc --use-local-channels --num-particles 200 > /dev/null 2>&1 &")
-        os.system("../bin/exp_loc --use-local-channels > /dev/null 2>&1 &")
+        self.start_local_exploration()
+
         print("Start motion planning server")
         os.system("../bin/motion_planning_server > /dev/null 2>&1 &")
 
@@ -226,7 +252,7 @@ class Bonus:
             self.runOnce()
             # time.sleep(0.001)
         
-        os.system("../cleanup_bonus.sh")
+        self.cleanup_local_exploration()
 
 
 # Program entry
@@ -237,7 +263,13 @@ if __name__ == "__main__":
     print("Start motion controller")
     os.system("../bin/motion_controller")
 
-    # 1. search longest scan ray
-    # 2. follow 1/10 length of this ray
-    # 3. check particles distribution (variance and socre?)
+    # 1. run exploration with full slam and motion controller in local channels
+    # 2. check particles distribution (variance and socre?) in global channels
     # 4. loop until converge (50-70% of particles have a very small variance)
+    # Note that global slam is running in localization mode with sampling augmentation,
+    # while local slam is running in full slam mode.
+
+    # Local channels: SLAM_POSE_LOCAL, SLAM_MAP_LOCAL
+    # slam: publish slam_pose and slam_map
+    # exploration: subscribe slam_map, slam_pose; publish controller_path
+    # motion_controller: subscribe slam_pose, controller_path
