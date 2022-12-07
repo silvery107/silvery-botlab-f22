@@ -283,3 +283,4 @@ srp_md/src/srp_md/ui/pyqt_format.py
 
 # Botlab data folder
 botlab-data
+scripts/python/mbot_lcm_msgs/
