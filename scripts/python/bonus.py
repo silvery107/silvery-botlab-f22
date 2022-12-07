@@ -9,7 +9,7 @@ from mbot_lcm_msgs import *
 from step_test import *
 import collections
 
-class Bouns:
+class Bonus:
     def __init__(self) -> None:
         self.scan = None
         self.particles = None
@@ -223,7 +223,7 @@ class Bouns:
 
 # Program entry
 if __name__ == "__main__":
-    agent = Bouns()
+    agent = Bonus()
     agent.run()
     # agent.send_goal_to_planner()
     os.system("../bin/motion_controller")

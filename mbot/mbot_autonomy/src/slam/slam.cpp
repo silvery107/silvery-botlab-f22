@@ -20,13 +20,14 @@ OccupancyGridSLAM::OccupancyGridSLAM(int numParticles,
                                      bool actionOnlyMode,
                                      const std::string mapFile,
                                      bool randomInitialPos,
+                                     bool useLocalChannels,
                                      mbot_lcm_msgs::pose_xyt_t initialPose)
 : mode_(full_slam)  // default is running full SLAM, unless user specifies otherwise on the command line
 , haveInitializedPoses_(false)
 , waitingForOptitrack_(waitForOptitrack)
 , haveMap_(false)
 , running_(true)
-, laserCW_(true) //if laser is clockwise (old convention) or ccw (new convention)
+, laserCW_(false) //if laser is clockwise (old convention) or ccw (new convention)
 , numIgnoredScans_(0)
 , iters_(0)
 , filter_(numParticles)
@@ -35,6 +36,7 @@ OccupancyGridSLAM::OccupancyGridSLAM(int numParticles,
 , lcm_(lcmComm)
 , mapUpdateCount_(0)
 , randomInitialPos_(randomInitialPos)
+, useLocalChannels_(useLocalChannels)
 , odomResetThreshDist_(0.05)
 , odomResetThreshAng_(0.08)  // ~5 degrees.
 , mapFile_(mapFile)
@@ -319,8 +321,13 @@ void OccupancyGridSLAM::updateLocalization(void)
 
         auto particles = filter_.particles();
 
-        lcm_.publish(SLAM_POSE_CHANNEL, &currentPose_);
-        lcm_.publish(SLAM_PARTICLES_CHANNEL, &particles);
+        if (useLocalChannels_) {
+            lcm_.publish(SLAM_PARTICLES_LOCAL_CHANNEL, &particles);
+            lcm_.publish(SLAM_POSE_LOCAL_CHANNEL, &currentPose_);
+        } else {
+            lcm_.publish(SLAM_PARTICLES_CHANNEL, &particles);
+            lcm_.publish(SLAM_POSE_CHANNEL, &currentPose_);
+        }
 
    }
 }
@@ -367,7 +374,11 @@ void OccupancyGridSLAM::updateMap(void)
     {
         auto mapMessage = map_.toLCM();
 
-        lcm_.publish(SLAM_MAP_CHANNEL, &mapMessage);
+        if (useLocalChannels_) {
+            lcm_.publish(SLAM_MAP_LOCAL_CHANNEL, &mapMessage);
+        } else {
+            lcm_.publish(SLAM_MAP_CHANNEL, &mapMessage);
+        }
         if (mode_ != localization_only)
         {
             map_.saveToFile(mapFile_);

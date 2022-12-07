@@ -34,7 +34,8 @@ bool are_equal(const pose_vec_t& lhs, const pose_vec_t& rhs)
 
 
 Exploration::Exploration(int32_t teamNumber,
-                         lcm::LCM* lcmInstance)
+                         lcm::LCM* lcmInstance,
+                         bool useLocalChannels)
 : teamNumber_(teamNumber)
 , state_(mbot_lcm_msgs::exploration_status_t::STATE_INITIALIZING)
 , haveNewPose_(false)
@@ -42,11 +43,17 @@ Exploration::Exploration(int32_t teamNumber,
 , haveHomePose_(false)
 , lcmInstance_(lcmInstance)
 , pathReceived_(false)
+, useLocalChannels_(useLocalChannels)
 {
     assert(lcmInstance_);   // confirm a nullptr wasn't passed in
+    if (useLocalChannels_) {
+        lcmInstance_->subscribe(SLAM_MAP_LOCAL_CHANNEL, &Exploration::handleMap, this);
+        lcmInstance_->subscribe(SLAM_POSE_LOCAL_CHANNEL, &Exploration::handlePose, this);
+    } else {
+        lcmInstance_->subscribe(SLAM_MAP_CHANNEL, &Exploration::handleMap, this);
+        lcmInstance_->subscribe(SLAM_POSE_CHANNEL, &Exploration::handlePose, this);
+    }
     
-    lcmInstance_->subscribe(SLAM_MAP_CHANNEL, &Exploration::handleMap, this);
-    lcmInstance_->subscribe(SLAM_POSE_CHANNEL, &Exploration::handlePose, this);
     lcmInstance_->subscribe(MESSAGE_CONFIRMATION_CHANNEL, &Exploration::handleConfirmation, this);
     
     // Send an initial message indicating that the exploration module is initializing. Once the first map and pose are

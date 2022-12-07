@@ -19,6 +19,8 @@
 #include <mbot/mbot_channels.h>
 #include <slam/slam_channels.h>
 
+#include <common_utils/getopt.h>
+
 #include "maneuver_controller.h"
 
 ////////////////////// TODO: /////////////////////////////
@@ -200,10 +202,10 @@ public:
     /**
     * Constructor for MotionController.
     */
-    MotionController(lcm::LCM * instance)
-    :
-        lcmInstance(instance),
-        odomToGlobalFrame_{0, 0, 0, 0}
+    MotionController(lcm::LCM * instance, bool useLocalChannels)
+    : lcmInstance(instance)
+    , useLocalChannels_(useLocalChannels)
+    , odomToGlobalFrame_{0, 0, 0, 0}
     {
         subscribeToLcm();
 
@@ -384,6 +386,7 @@ private:
 
     int64_t time_offset;
     bool timesync_initialized_;
+    bool useLocalChannels_;
 
     lcm::LCM * lcmInstance;
  
@@ -432,8 +435,12 @@ private:
 
     void subscribeToLcm()
     {
+        if (useLocalChannels_) {
+            lcmInstance->subscribe(SLAM_POSE_LOCAL_CHANNEL, &MotionController::handlePose, this);
+        } else {
+            lcmInstance->subscribe(SLAM_POSE_CHANNEL, &MotionController::handlePose, this);            
+        }
         lcmInstance->subscribe(ODOMETRY_CHANNEL, &MotionController::handleOdometry, this);
-        lcmInstance->subscribe(SLAM_POSE_CHANNEL, &MotionController::handlePose, this);
         lcmInstance->subscribe(CONTROLLER_PATH_CHANNEL, &MotionController::handlePath, this);
         lcmInstance->subscribe(MBOT_TIMESYNC_CHANNEL, &MotionController::handleTimesync, this);
     }
@@ -441,8 +448,25 @@ private:
 
 int main(int argc, char** argv)
 {
+    // Define all command-line arguments
+    const char* kUseLocalChannels = "use-local-channels";
+
+    getopt_t *gopt = getopt_create();
+    getopt_add_bool(gopt, 'h', "help", 0, "Show this help");
+    getopt_add_bool(gopt, '\0', kUseLocalChannels, 0, "Use local SLAM map and particles channels");
+
+    // If help was requested or the command line is invalid, display the help message and exit
+    if (!getopt_parse(gopt, argc, argv, 1) || getopt_get_bool(gopt, "help")) {
+        printf("Usage: %s [options]", argv[0]);
+        getopt_do_usage(gopt);
+        return 1;
+    }
+
+    // Convert all command-line values into program variables
+    bool useLocalChannels = getopt_get_bool(gopt, kUseLocalChannels);
+
     lcm::LCM lcmInstance(MULTICAST_URL);
-    MotionController controller(&lcmInstance);
+    MotionController controller(&lcmInstance, useLocalChannels);
 
     signal(SIGINT, exit);
     
