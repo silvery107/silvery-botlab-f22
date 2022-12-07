@@ -191,7 +191,7 @@ int main(int argc, char** argv)
         slam = UniqueSlamPtr(
                     new OccupancyGridSLAM(
                         numParticles, hitOdds, missOdds, lcmConnection, useOptitrack,
-                        mappingOnly, localizationOnly, actionOnly, mapFile, randomInitialPos)
+                        mappingOnly, localizationOnly, actionOnly, mapFile, randomInitialPos, useLocalChannels)
                 );
         slamThreadPtr = std::unique_ptr<std::thread >(new std::thread([&slam]() { slam->runSLAM(); }));
     }

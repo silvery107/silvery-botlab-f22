@@ -27,7 +27,7 @@ OccupancyGridSLAM::OccupancyGridSLAM(int numParticles,
 , waitingForOptitrack_(waitForOptitrack)
 , haveMap_(false)
 , running_(true)
-, laserCW_(false) //if laser is clockwise (old convention) or ccw (new convention)
+, laserCW_(true) //if laser is clockwise (old convention) or ccw (new convention)
 , numIgnoredScans_(0)
 , iters_(0)
 , filter_(numParticles)
