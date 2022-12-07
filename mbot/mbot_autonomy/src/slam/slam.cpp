@@ -30,7 +30,7 @@ OccupancyGridSLAM::OccupancyGridSLAM(int numParticles,
 , laserCW_(true) //if laser is clockwise (old convention) or ccw (new convention)
 , numIgnoredScans_(0)
 , iters_(0)
-, filter_(numParticles)
+, filter_(numParticles, randomInitialPos)
 , map_(20.0f, 20.0f, 0.025f) // create a 20m x 20m grid with 0.025m cells
 , mapper_(5.0f, hitOddsIncrease, missOddsDecrease)
 , lcm_(lcmComm)
@@ -322,7 +322,7 @@ void OccupancyGridSLAM::updateLocalization(void)
         auto particles = filter_.particles();
 
         if (useLocalChannels_) {
-            lcm_.publish(SLAM_PARTICLES_LOCAL_CHANNEL, &particles);
+            // lcm_.publish(SLAM_PARTICLES_LOCAL_CHANNEL, &particles);
             lcm_.publish(SLAM_POSE_LOCAL_CHANNEL, &currentPose_);
         } else {
             lcm_.publish(SLAM_PARTICLES_CHANNEL, &particles);
