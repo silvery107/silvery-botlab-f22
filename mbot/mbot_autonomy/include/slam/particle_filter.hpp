@@ -121,7 +121,8 @@ private:
         
         bool sample_randomly()
         { 
-            return uniform_distribution(generator) < rand_sample_prob;
+            // return uniform_distribution(generator) < rand_sample_prob;
+            return uniform_distribution(generator) < 0.2;
         }
 
         void insert_average_weight(float avg_w)

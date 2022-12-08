@@ -84,7 +84,9 @@ OccupancyGridSLAM::OccupancyGridSLAM(int numParticles,
     reset.x = initialPose.x;
     reset.y = initialPose.y;
     reset.theta = initialPose.theta;
-    lcm_.publish(ODOMETRY_RESET_CHANNEL, &reset);
+    if (!useLocalChannels_) {
+        lcm_.publish(ODOMETRY_RESET_CHANNEL, &reset);
+    }
 
     std::cout << LOG_HEADER << "SLAM initialized in mode " << mode_ << std::endl;
 }

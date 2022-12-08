@@ -31,7 +31,7 @@ FULL_SLAM_MODE=0
 LOCALIZATION_MODE=0
 
 MAP_FILE="$ROOT_DIR/current.map"  # Default map file.
-PARTICLE_COUNT=200
+PARTICLE_COUNT=500
 
 while getopts ":hilscm:" option; do
     case $option in
@@ -95,19 +95,12 @@ fi
 echo "Launching botgui"
 $ROOT_DIR/bin/botgui
 
-# Create sim links to the log files. Needed if all logs should be preserved.
-# ln -sf $LOG_DIR/timesync_$TIMESTAMP.log $LOG_DIR/timesync_latest.log
-# ln -sf $LOG_DIR/rplidar_driver_$TIMESTAMP.log $LOG_DIR/rplidar_driver_latest.log
-# ln -sf $LOG_DIR/pico_shim_$TIMESTAMP.log $LOG_DIR/pico_shim_latest.log
-# ln -sf $LOG_DIR/motion_controller_$TIMESTAMP.log $LOG_DIR/motion_controller_latest.log
-# ln -sf $LOG_DIR/slam_$TIMESTAMP.log $LOG_DIR/slam_latest.log
+# echo "Cleaning up any running MBot code."
+# pkill slam
+# pkill motion_controll
+# pkill rplidar_driver
 
-echo "Cleaning up any running MBot code."
-pkill slam
-pkill motion_controll
-pkill rplidar_driver
-
-python python/stop_mbot.py
-echo "Stopping mbot......"
-pkill pico_shim
-pkill timesync
+# python python/stop_mbot.py
+# echo "Stopping mbot......"
+# pkill pico_shim
+# pkill timesync

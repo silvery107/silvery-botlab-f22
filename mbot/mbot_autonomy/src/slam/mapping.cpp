@@ -142,9 +142,10 @@ void Mapping::bresenham_jit(const adjusted_ray_t& ray, OccupancyGrid& map){
     int err = dx - dy;
     int x = start_cell.x;
     int y = start_cell.y;
+    int e2;
     while(x != end_cell.x || y != end_cell.y){
         decreaseLogOdds(x, y, map);
-        int e2 = 2 * err;
+        e2 = 2 * err;
         if (e2 >= -dy){
             err -= dy;
             x += sx;

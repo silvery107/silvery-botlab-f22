@@ -190,7 +190,7 @@ ParticleList ParticleFilter::computeNormalizedPosterior(const ParticleList& prop
     ParticleList posterior;
 
     double sumWeights = 0.0;
-    double averageWeights = 0.0;
+    // double averageWeights = 0.0;
     double M = 1.0 / static_cast<double>(kNumParticles_);
 
     for (auto &&p : proposal)
@@ -198,7 +198,7 @@ ParticleList ParticleFilter::computeNormalizedPosterior(const ParticleList& prop
         mbot_lcm_msgs::particle_t weighted = p;
         weighted.weight = sensorModel_.likelihood(weighted, laser, map);
         sumWeights += weighted.weight;
-        averageWeights += weighted.weight / M;
+        // averageWeights += weighted.weight / M;
         posterior.push_back(weighted);
     }
 
@@ -207,7 +207,7 @@ ParticleList ParticleFilter::computeNormalizedPosterior(const ParticleList& prop
     {
         p.weight /= sumWeights;
     }
-    samplingAugmentation.insert_average_weight(averageWeights);
+    // samplingAugmentation.insert_average_weight(averageWeights);
     return posterior;
 }
 
