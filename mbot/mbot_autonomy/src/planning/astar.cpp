@@ -80,7 +80,7 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         if (iter % 1000 == 1) {
             printf("Cur iter: %d\n", iter);
         }
-        if (iter > 8000 || open_set.empty()) {
+        if (iter > 10000 || open_set.empty()) {
             iter = 0;
             if (minDistanceToObstacleOffset < std::min(params.minDistanceToObstacle, 0.1)) {
                 minDistanceToObstacleOffset += 0.01;

@@ -31,7 +31,7 @@ FULL_SLAM_MODE=0
 LOCALIZATION_MODE=0
 
 MAP_FILE="$ROOT_DIR/current.map"  # Default map file.
-PARTICLE_COUNT=500
+PARTICLE_COUNT=200
 
 while getopts ":hilscm:" option; do
     case $option in
@@ -95,12 +95,12 @@ fi
 echo "Launching botgui"
 $ROOT_DIR/bin/botgui
 
-# echo "Cleaning up any running MBot code."
-# pkill slam
-# pkill motion_controll
-# pkill rplidar_driver
+echo "Cleaning up any running MBot code."
+pkill slam
+pkill motion_controll
+pkill rplidar_driver
 
-# python python/stop_mbot.py
-# echo "Stopping mbot......"
-# pkill pico_shim
-# pkill timesync
+python python/stop_mbot.py
+echo "Stopping mbot......"
+pkill pico_shim
+pkill timesync
