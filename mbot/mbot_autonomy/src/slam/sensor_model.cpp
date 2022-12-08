@@ -122,7 +122,7 @@ double SensorModel::scoreRayLikelihoodModel(const adjusted_ray_t& ray, const Occ
 	int e2;
 
 	// Search along the line once
-    while(x != rayEnd.x || y != rayEnd.y && map.isCellInGrid(x, y)){
+    while(x != rayEnd.x || y != rayEnd.y){
 		if (map.logOdds(x, y) > 0){
 			return 0.0;
 		}
