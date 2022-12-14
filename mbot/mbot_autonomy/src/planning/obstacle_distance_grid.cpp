@@ -30,7 +30,7 @@ void ObstacleDistanceGrid::initializeDistances(const OccupancyGrid& map)
                 distance(cell.x, cell.y) = 0.0;
             }
             else {
-                distance(cell.x, cell.y) = -1.0;
+                distance(cell.x, cell.y) = 0.0;
             }
         }
         
@@ -43,7 +43,6 @@ void ObstacleDistanceGrid::setDistances(const OccupancyGrid& map)
 {
     resetGrid(map);
     
-    ////////// TODO: Implement an algorithm to mark the distance to the nearest obstacle for every cell in the map.
     initializeDistances(map);
 
     std::priority_queue<DistanceNode> searchQueue;
@@ -53,7 +52,16 @@ void ObstacleDistanceGrid::setDistances(const OccupancyGrid& map)
     {
         auto nextNode = searchQueue.top();
         searchQueue.pop();
-        expand_node(nextNode, *this, searchQueue);
+
+        float& node_distance = cells_[cellIndex(nextNode.cell.x, nextNode.cell.y)];
+        
+        // If we haven't already popped this from the priority queue, then this must be
+        // the shortest distance to that cell. Otherwise, we skip it.
+        if (node_distance == -1)
+        {
+            node_distance = nextNode.distance * metersPerCell();
+            expand_node(nextNode, *this, searchQueue);
+        }
     }
 }
 
@@ -106,25 +114,22 @@ void enqueue_obstacle_cells(const OccupancyGrid& map,
 
 void expand_node(const DistanceNode& node, ObstacleDistanceGrid& grid, std::priority_queue<DistanceNode>& search_queue)
 {
-    // TODO: Expand to 8 way? yeees!
     const int xDeltas[8] = {1, -1, 0, 0, 1, -1, 1, -1};
     const int yDeltas[8] = {0, 0, 1, -1, 1, -1, -1, 1};
-
     for (int n = 0; n < 8; ++n)
     {
         cell_t adjacentCell(node.cell.x + xDeltas[n], node.cell.y + yDeltas[n]);
         if (grid.isCellInGrid(adjacentCell.x, adjacentCell.y))
         {
-            // Not seen yet
-            if (grid(adjacentCell.x, adjacentCell.y) < 0)
-            {
-                float distance = node.distance;
-                if (n < 4) distance += 1.0f;
-                else distance += 1.414213562f;
-                DistanceNode adjacentNode(adjacentCell, distance);
-                grid(adjacentCell.x, adjacentCell.y) = adjacentNode.distance * grid.metersPerCell();
-                search_queue.push(adjacentNode);
+            // If the cell already has a value set, we've already found the optimal path,
+            // and don't need to bother enqueuing it again
+            if(grid(adjacentCell.x, adjacentCell.y) != -1) {
+                continue;
             }
+            const float distance = node.distance 
+                                  + (n < 4 ? 1 : M_SQRT2);
+            DistanceNode adjacentNode(adjacentCell, distance);
+            search_queue.push(adjacentNode);
         }
     }
 }
