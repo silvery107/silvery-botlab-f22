@@ -55,7 +55,7 @@ public:
     * \param    targetFile              Name of the file holding the key and treasure target information (only matters if shouldAttemptEscape is true)
     * \param    lcmInstance             Instance of LCM to use for communication
     */
-    Exploration(int32_t teamNumber, lcm::LCM* lcmInstance);
+    Exploration(int32_t teamNumber, lcm::LCM* lcmInstance, bool useLocalChannels);
     
     /**
     * exploreEnvironment explores the robot's environment. The exploration routine assumes that the environment
@@ -127,7 +127,7 @@ private:
     int8_t executeFailed(bool initialize);
     
     //////////// TODO: Add any additional methods you might need here //////////////
-    
+    bool useLocalChannels_;
     /////////////////////////// End student code ///////////////////////////////
 };
 

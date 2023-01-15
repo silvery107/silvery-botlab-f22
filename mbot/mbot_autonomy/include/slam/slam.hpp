@@ -49,6 +49,7 @@ public:
                       bool actionOnlyMode = false,
                       const std::string mapFile = std::string("current.map"),
                       bool randomInitialPos = false,
+                      bool useLocalChannels = false,
                       mbot_lcm_msgs::pose_xyt_t initialPose = {0, 0, 0, 0});
 
     ~OccupancyGridSLAM();
@@ -130,6 +131,7 @@ private:
     // TODO: your own variables
     bool randomInitialPos_;
     float odomResetThreshDist_, odomResetThreshAng_;
+    bool useLocalChannels_;
 };
 
 #endif // SLAM_OCCUPANCY_GRID_SLAM_HPP

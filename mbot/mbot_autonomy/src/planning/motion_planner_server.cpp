@@ -34,8 +34,8 @@ void MotionPlannerServer::handleRequest(const lcm::ReceiveBuffer* rbuf, const st
     start.y = slamPose_.y;
     start.theta = slamPose_.theta;
 
-    mbot_lcm_msgs::pose_xyt_t goal;
-    goal.theta = request->goal.theta;
+    // mbot_lcm_msgs::pose_xyt_t goal;
+    // goal.theta = request->goal.theta;
     // auto goalCoord = grid_position_to_global_position(Point<double>(request->goal.y, request->goal.x), latest_map_);
     // goal.x = goalCoord.x;
     // goal.y = goalCoord.y;
@@ -43,11 +43,11 @@ void MotionPlannerServer::handleRequest(const lcm::ReceiveBuffer* rbuf, const st
     mbot_lcm_msgs::robot_path_t path;
     if(request->require_plan){
         planner_.setMap(latest_map_);
-        path = planner_.planPath(start, goal);
+        path = planner_.planPath(start, request->goal);
     }else{
         path.path_length = 2;
         path.path.push_back(start);
-        path.path.push_back(goal);
+        path.path.push_back(request->goal);
     }
     
     lcm_.publish(CONTROLLER_PATH_CHANNEL, &path);

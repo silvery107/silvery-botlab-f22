@@ -26,7 +26,7 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
     if (start_node==goal_node){
         path.path.push_back(start);
         path.path_length = path.path.size();
-        path.utime = utime_now();
+        path.utime = goal.utime;
         printf("Astar start_node==goal_node!!!!!!!\n");
         printf("Path contain: (%.3f, %.3f, %.3f)\n", path.path[0].x, path.path[0].y, path.path[0].theta);
         return path;
@@ -80,7 +80,7 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         if (iter % 1000 == 1) {
             printf("Cur iter: %d\n", iter);
         }
-        if (iter > 8000 || open_set.empty()) {
+        if (iter > 10000 || open_set.empty()) {
             iter = 0;
             if (minDistanceToObstacleOffset < std::min(params.minDistanceToObstacle, 0.1)) {
                 minDistanceToObstacleOffset += 0.01;
@@ -118,7 +118,7 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
         path.path.clear();
         path.path.push_back(start);
         path.path_length = path.path.size();
-        path.utime = utime_now();
+        path.utime = goal.utime;
         printf("Astar failed, no path found!!!!!!!\n");
         return path;
     }
@@ -152,7 +152,7 @@ mbot_lcm_msgs::robot_path_t search_for_path(mbot_lcm_msgs::pose_xyt_t start,
     float theta_y = pathFiltered.path.back().y - pathFiltered.path[pathFiltered.path.size() -2].y;
     pathFiltered.path.back().theta = std::atan2(theta_y, theta_x);
     pathFiltered.path_length = pathFiltered.path.size();
-    pathFiltered.utime = utime_now();
+    pathFiltered.utime = goal.utime;
     return pathFiltered;
 }
 

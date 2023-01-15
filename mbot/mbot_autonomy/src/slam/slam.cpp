@@ -20,6 +20,7 @@ OccupancyGridSLAM::OccupancyGridSLAM(int numParticles,
                                      bool actionOnlyMode,
                                      const std::string mapFile,
                                      bool randomInitialPos,
+                                     bool useLocalChannels,
                                      mbot_lcm_msgs::pose_xyt_t initialPose)
 : mode_(full_slam)  // default is running full SLAM, unless user specifies otherwise on the command line
 , haveInitializedPoses_(false)
@@ -29,12 +30,13 @@ OccupancyGridSLAM::OccupancyGridSLAM(int numParticles,
 , laserCW_(true) //if laser is clockwise (old convention) or ccw (new convention)
 , numIgnoredScans_(0)
 , iters_(0)
-, filter_(numParticles)
+, filter_(numParticles, randomInitialPos)
 , map_(20.0f, 20.0f, 0.025f) // create a 20m x 20m grid with 0.025m cells
 , mapper_(5.0f, hitOddsIncrease, missOddsDecrease)
 , lcm_(lcmComm)
 , mapUpdateCount_(0)
 , randomInitialPos_(randomInitialPos)
+, useLocalChannels_(useLocalChannels)
 , odomResetThreshDist_(0.05)
 , odomResetThreshAng_(0.08)  // ~5 degrees.
 , mapFile_(mapFile)
@@ -82,7 +84,9 @@ OccupancyGridSLAM::OccupancyGridSLAM(int numParticles,
     reset.x = initialPose.x;
     reset.y = initialPose.y;
     reset.theta = initialPose.theta;
-    lcm_.publish(ODOMETRY_RESET_CHANNEL, &reset);
+    if (!useLocalChannels_) {
+        lcm_.publish(ODOMETRY_RESET_CHANNEL, &reset);
+    }
 
     std::cout << LOG_HEADER << "SLAM initialized in mode " << mode_ << std::endl;
 }
@@ -319,8 +323,13 @@ void OccupancyGridSLAM::updateLocalization(void)
 
         auto particles = filter_.particles();
 
-        lcm_.publish(SLAM_POSE_CHANNEL, &currentPose_);
-        lcm_.publish(SLAM_PARTICLES_CHANNEL, &particles);
+        if (useLocalChannels_) {
+            // lcm_.publish(SLAM_PARTICLES_LOCAL_CHANNEL, &particles);
+            lcm_.publish(SLAM_POSE_LOCAL_CHANNEL, &currentPose_);
+        } else {
+            lcm_.publish(SLAM_PARTICLES_CHANNEL, &particles);
+            lcm_.publish(SLAM_POSE_CHANNEL, &currentPose_);
+        }
 
    }
 }
@@ -367,7 +376,11 @@ void OccupancyGridSLAM::updateMap(void)
     {
         auto mapMessage = map_.toLCM();
 
-        lcm_.publish(SLAM_MAP_CHANNEL, &mapMessage);
+        if (useLocalChannels_) {
+            lcm_.publish(SLAM_MAP_LOCAL_CHANNEL, &mapMessage);
+        } else {
+            lcm_.publish(SLAM_MAP_CHANNEL, &mapMessage);
+        }
         if (mode_ != localization_only)
         {
             map_.saveToFile(mapFile_);

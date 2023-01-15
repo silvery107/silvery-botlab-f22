@@ -39,7 +39,7 @@ public:
     * \param    numParticles        Number of particles to use
     * \pre  numParticles > 1
     */
-    ParticleFilter(int numParticles);
+    ParticleFilter(int numParticles, bool randomInitialPos=false);
 
     /**
     * initializeFilterAtPose initializes the particle filter with the samples distributed according
@@ -95,6 +95,7 @@ private:
     float quality_reinvigoration_percentage;
 
     int kNumParticles_;         // Number of particles to use for estimating the pose
+    bool randomInitialPos_;     // Wheather to enable samping augmentation
 
     ParticleList resamplePosteriorDistribution(const OccupancyGrid* map = nullptr);
     ParticleList computeProposalDistribution(const ParticleList& prior);
@@ -120,7 +121,8 @@ private:
         
         bool sample_randomly()
         { 
-            return uniform_distribution(generator) < rand_sample_prob;
+            // return uniform_distribution(generator) < rand_sample_prob;
+            return uniform_distribution(generator) < 0.2;
         }
 
         void insert_average_weight(float avg_w)

@@ -95,13 +95,6 @@ fi
 echo "Launching botgui"
 $ROOT_DIR/bin/botgui
 
-# Create sim links to the log files. Needed if all logs should be preserved.
-# ln -sf $LOG_DIR/timesync_$TIMESTAMP.log $LOG_DIR/timesync_latest.log
-# ln -sf $LOG_DIR/rplidar_driver_$TIMESTAMP.log $LOG_DIR/rplidar_driver_latest.log
-# ln -sf $LOG_DIR/pico_shim_$TIMESTAMP.log $LOG_DIR/pico_shim_latest.log
-# ln -sf $LOG_DIR/motion_controller_$TIMESTAMP.log $LOG_DIR/motion_controller_latest.log
-# ln -sf $LOG_DIR/slam_$TIMESTAMP.log $LOG_DIR/slam_latest.log
-
 echo "Cleaning up any running MBot code."
 pkill slam
 pkill motion_controll

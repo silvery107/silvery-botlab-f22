@@ -8,10 +8,12 @@ int main(int argc, char** argv)
 {
     // Define all command-line arguments
     const char* kTeamNumArg = "team-number";
+    const char* kUseLocalChannels = "use-local-channels";
 
     getopt_t *gopt = getopt_create();
     getopt_add_bool(gopt, 'h', "help", 0, "Show this help");
     getopt_add_int(gopt, 'n', kTeamNumArg, "-1", "Team number of the robot doing the exploration.");
+    getopt_add_bool(gopt, '\0', kUseLocalChannels, 0, "Use local SLAM map and particles channels");
 
     // If help was requested or the command line is invalid, display the help message and exit
     if (!getopt_parse(gopt, argc, argv, 1) || getopt_get_bool(gopt, "help")) {
@@ -22,13 +24,14 @@ int main(int argc, char** argv)
 
     // Convert all command-line values into program variables
     int teamNumber = getopt_get_int(gopt, kTeamNumArg);
+    bool useLocalChannels = getopt_get_bool(gopt, kUseLocalChannels);
 
     // Instantiate the LCM instance and Exploration instance that will run on the two program threads
     lcm::LCM lcmInstance(MULTICAST_URL);
 
     if(!lcmInstance.good()) return 1;
 
-    Exploration exploration(teamNumber, &lcmInstance);
+    Exploration exploration(teamNumber, &lcmInstance, useLocalChannels);
 
     std::atomic<bool> explorationComplete;
 

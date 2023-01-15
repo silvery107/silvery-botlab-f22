@@ -30,7 +30,8 @@ public:
                        bool localizationOnly,
                        bool actionOnly,
                        std::string& mapFile,
-                       bool randomInitialPos)
+                       bool randomInitialPos,
+                       bool useLocalChannels)
         : numParticles_(numParticles)
         , hitOdds_(hitOdds)
         , missOdds_(missOdds)
@@ -41,6 +42,7 @@ public:
         , mapFile_(mapFile)
         , randomInitialPos_(randomInitialPos)
         , retainPose_(false)
+        , useLocalChannels_(useLocalChannels)
     {
         lcmConnection.subscribe(MBOT_SYSTEM_RESET_CHANNEL, &SystemResetHandler::handle_system_reset, this);
     }
@@ -72,7 +74,7 @@ public:
             return UniqueSlamPtr(
                 new OccupancyGridSLAM(
                     numParticles_, hitOdds_, missOdds_, lcmConnection, useOptitrack_,
-                    mappingOnly_, localizationOnly_, actionOnly_, mapFile_, false, pose)
+                    mappingOnly_, localizationOnly_, actionOnly_, mapFile_, false, useLocalChannels_, pose)
             );
         }
 
@@ -86,7 +88,7 @@ public:
         return UniqueSlamPtr(
             new OccupancyGridSLAM(
                 numParticles_, hitOdds_, missOdds_, lcmConnection, useOptitrack_,
-                mappingOnly_, localizationOnly_, actionOnly_, mapFile_, randomInitialPos_)
+                mappingOnly_, localizationOnly_, actionOnly_, mapFile_, randomInitialPos_, useLocalChannels_)
         );
     }
 
@@ -106,6 +108,7 @@ private:
     std::string mapFile_;
     bool randomInitialPos_;
     bool retainPose_;
+    bool useLocalChannels_;
 };
 
 int main(int argc, char** argv)
@@ -120,6 +123,7 @@ int main(int argc, char** argv)
     const char* kRandomParticleInitialization = "random-initial-pos";
     const char* kListeningMode = "listen-for-mode";
     const char* kMapFile = "map";
+    const char* kUseLocalChannels = "use-local-channels";
 
     // Handle Options
     getopt_t *gopt = getopt_create();
@@ -135,6 +139,7 @@ int main(int argc, char** argv)
     getopt_add_string(gopt, '\0', kMapFile, "current.map", "Map to load if localization only, output map file if mapping mode.");
 
     getopt_add_bool(gopt, '\0', kRandomParticleInitialization, 0, "Initial particles should be randomly distributed along the map.");
+    getopt_add_bool(gopt, '\0', kUseLocalChannels, 0, "Use local SLAM map and particles channels");
 
     if (!getopt_parse(gopt, argc, argv, 1) || getopt_get_bool(gopt, "help")) {
         printf("Usage: %s [options]", argv[0]);
@@ -151,6 +156,7 @@ int main(int argc, char** argv)
     bool localizationOnly = getopt_get_bool(gopt, kLocalizationOnlyArg);
     bool randomInitialPos = getopt_get_bool(gopt, kRandomParticleInitialization);
     bool listeningMode = getopt_get_bool(gopt, kListeningMode);
+    bool useLocalChannels = getopt_get_bool(gopt, kUseLocalChannels);
     std::string mapFile = getopt_get_string(gopt, kMapFile);
 
     ctrl_c_pressed = false;
@@ -158,7 +164,8 @@ int main(int argc, char** argv)
     signal(SIGTERM, ctrlc);
     lcm::LCM lcmConnection(MULTICAST_URL);
     SystemResetHandler systemResetHandler(numParticles, hitOdds, missOdds, lcmConnection, useOptitrack,
-                                          mappingOnly, localizationOnly, actionOnly, mapFile, randomInitialPos);
+                                          mappingOnly, localizationOnly, actionOnly, mapFile,
+                                          randomInitialPos, useLocalChannels);
 
     UniqueSlamPtr slam;
     std::shared_ptr<std::thread> slamThreadPtr;
@@ -184,7 +191,7 @@ int main(int argc, char** argv)
         slam = UniqueSlamPtr(
                     new OccupancyGridSLAM(
                         numParticles, hitOdds, missOdds, lcmConnection, useOptitrack,
-                        mappingOnly, localizationOnly, actionOnly, mapFile, randomInitialPos)
+                        mappingOnly, localizationOnly, actionOnly, mapFile, randomInitialPos, useLocalChannels)
                 );
         slamThreadPtr = std::unique_ptr<std::thread >(new std::thread([&slam]() { slam->runSLAM(); }));
     }

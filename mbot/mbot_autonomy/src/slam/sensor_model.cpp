@@ -112,6 +112,30 @@ double SensorModel::scoreRayLikelihoodModel(const adjusted_ray_t& ray, const Occ
         ), 
     	map
     	);
+    int dx = abs(rayEnd.x - rayStart.x);
+    int dy = abs(rayEnd.y - rayStart.y);
+    int sx = rayStart.x < rayEnd.x ? 1 : -1;
+    int sy = rayStart.y < rayEnd.y ? 1 : -1;
+    int err = (dx - dy);
+    int x = rayStart.x;
+    int y = rayStart.y;
+	int e2;
+
+	// Search along the line once
+    while(x != rayEnd.x || y != rayEnd.y){
+		if (map.logOdds(x, y) > 0){
+			return 0.0;
+		}
+        e2 = 2 * err;
+        if (e2 >= -dy){
+            err -= dy;
+            x += sx;
+        }
+        if (e2 <= dx){
+            err += dx;
+            y += sy;
+        }
+	}
 	Point<int> rayExtended = global_position_to_grid_cell(
         Point<float>(
             ray.origin.x + 2 * ray.range * std::cos(ray.theta),

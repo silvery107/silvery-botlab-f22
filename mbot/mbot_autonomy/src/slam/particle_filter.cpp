@@ -6,11 +6,13 @@
 #include <cassert>
 
 
-ParticleFilter::ParticleFilter(int numParticles)
-: kNumParticles_ (numParticles),
-  samplingAugmentation(0.5, 0.9, numParticles),
-  distribution_quality(1),
-  quality_reinvigoration_percentage(0.1)
+ParticleFilter::ParticleFilter(int numParticles, bool randomInitialPos)
+: kNumParticles_ (numParticles)
+, randomInitialPos_(randomInitialPos)
+, samplingAugmentation(0.5, 0.9, numParticles)
+, randomPoseGen()
+, distribution_quality(1)
+, quality_reinvigoration_percentage(0.1)
 {
     assert(kNumParticles_ > 1);
     posterior_.resize(kNumParticles_);
@@ -45,14 +47,14 @@ void ParticleFilter::initializeFilterAtPose(const mbot_lcm_msgs::pose_xyt_t& pos
 void ParticleFilter::initializeFilterRandomly(const OccupancyGrid& map)
 {
     ////////////// TODO: Implement your method for initializing the particles in the particle filter /////////////////
-    RandomPoseSampler randomPoseSampler(&map);
+    randomPoseGen.update_map(&map);
     double sampleWeight = 1.0 / kNumParticles_;
     
-    posteriorPose_ = randomPoseSampler.get_pose();
+    posteriorPose_ = randomPoseGen.get_pose();
     
     for (auto &&p : posterior_)
     {
-        p = randomPoseSampler.get_particle();
+        p = randomPoseGen.get_particle();
         p.weight = sampleWeight;
     }
 }
@@ -138,7 +140,8 @@ ParticleList ParticleFilter::resamplePosteriorDistribution(const OccupancyGrid* 
     //////////// TODO: Implement your algorithm for resampling from the posterior distribution ///////////////////
     // Low variance sampler from Probabilistic Robotics
     ParticleList prior;
-    // RandomPoseSampler randomPoseSampler(map);
+    if (randomInitialPos_)
+        randomPoseGen.update_map(map);
 
     // random number
     std::random_device rd;
@@ -149,16 +152,16 @@ ParticleList ParticleFilter::resamplePosteriorDistribution(const OccupancyGrid* 
     int i = 0;
     double U;
     for (int m = 0; m < kNumParticles_; m++){
-        // if (samplingAugmentation.sample_randomly()){
-        //     prior.push_back(randomPoseSampler.get_particle());
-        // } else {
+        if (randomInitialPos_ && samplingAugmentation.sample_randomly()){
+            prior.push_back(randomPoseGen.get_particle());
+        } else {
             U = r + m * 1.0 / (static_cast<double>(kNumParticles_));
             while (U > c){
                 i += 1;
                 c += posterior_[i].weight;
             }
             prior.push_back(posterior_[i]);
-        // }
+        }
     }
 
     return prior;

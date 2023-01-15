@@ -132,11 +132,10 @@ frontier_processing_t plan_path_to_frontier(const std::vector<frontier_t>& front
     // Returnable path
     int unreachable_frontiers = 0;
     mbot_lcm_msgs::robot_path_t path;
-    ObstacleDistanceGrid distances = planner.obstacleDistances();
-    Point<int> start_cell = global_position_to_grid_cell(Point<double>(robotPose.x, robotPose.y), distances);
+
     float mindistance = std::numeric_limits<float>::max();
     float distance;
-    Point<float> chosencell;
+
     Point<float> fcell;
     mbot_lcm_msgs::pose_xyt_t fpose_reachable;
     mbot_lcm_msgs::robot_path_t temp_path;
@@ -156,25 +155,6 @@ frontier_processing_t plan_path_to_frontier(const std::vector<frontier_t>& front
             unreachable_frontiers+=1;
         }
     }
-    
-    // chosencell = search_to_nearest_free_space(chosencell, map, planner);
-
-    // if (mindistance == std::numeric_limits<float>::max()){
-    //     path.utime = utime_now();
-    //     path.path_length = 1;
-    //     path.path.push_back(robotPose);
-    //     // int unreachable_frontiers = 0;
-    // }
-    // else{
-    //     mbot_lcm_msgs::pose_xyt_t goal;
-    //     goal.x = chosencell.x;
-    //     goal.y = chosencell.y;
-    //     goal.theta = 0.f;
-    //     goal.utime = utime_now();
-    //     path = planner.planPath(robotPose, goal);
-    // }
-    
-
     
     return frontier_processing_t(path, unreachable_frontiers);
 }
@@ -269,10 +249,10 @@ mbot_lcm_msgs::pose_xyt_t search_to_nearest_free_space(Point<float> position, co
             return pose_to_return;
         }
     }
+    Point<int> startCell = global_position_to_grid_cell(position, map);
+    
     std::queue<Point<int>> cellQueue;
     std::set<Point<int>> visitedFrontiers;
-    ObstacleDistanceGrid distances = planner.obstacleDistances();
-    Point<int> startCell = global_position_to_grid_cell(position, map);
     cellQueue.push(startCell);
     visitedFrontiers.insert(startCell);
     
@@ -297,7 +277,6 @@ mbot_lcm_msgs::pose_xyt_t search_to_nearest_free_space(Point<float> position, co
                 visitedFrontiers.insert(neighbor);
                 cellQueue.push(neighbor);
                 if (planner.isValidGoal(neighbor)) {
-                // if (distances(neighbor.x, neighbor.y) > planner.searchParams_.minDistanceToObstacle) {
                     Point<float> temp_point = grid_position_to_global_position(neighbor, map);
                     pose_to_return.x = temp_point.x;
                     pose_to_return.y = temp_point.y;
