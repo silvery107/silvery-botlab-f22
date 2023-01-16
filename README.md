@@ -6,8 +6,8 @@ In the Botlab, movement control, obstacle detection, maze exploration, and self-
 
 ## Motion Controller
 Motion control can be separated into three hierarchical levels: 
-- wheel PID controllers 
-- nonholomic state feedback controller
+- Wheel PID controllers 
+- Nonholomic state feedback controller
 
 <img src="data/wheel_pid.png" width="400">
 
