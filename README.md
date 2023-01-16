@@ -1,6 +1,6 @@
 # ROB 550 Botlab
-The Botlab is designed to explore the fundamentals of robot autonomy by developing a robot with autonomous mapping, localization, and exploration capabilities. 
-In the Botlab, movement control, obstacle detection, maze exploration, and self-localization functionality will be developed on the MBot robot, a mobile robot platform.
+In the Botlab, movement control, obstacle detection, maze exploration, and self-localization functionality was developed on the MBot robot, a mobile robot platform.
+It is designed to explore the fundamentals of robot autonomy by developing MBot with autonomous mapping, localization, and exploration capabilities. 
 
 <img src="data/mbot.png" width="250">
 
