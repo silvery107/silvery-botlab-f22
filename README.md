@@ -23,6 +23,8 @@ It consists of the action model, the sensor model, and the particle filter. In a
 
 <img src="data/slam_components.png" width="400">
 
+https://github.com/silvery107/silvery-botlab-f22/assets/44640904/dcba4734-5da8-4cd8-8a59-b999f81e2a21
+
 ## Planning and Exploration
 Planning and exploration components are the highest level of abstraction, making use of SLAM and motion control systems. 
 Path planning is implemented using the A* algorithm, and the motion controller is used to execute paths that explore these areas. 
